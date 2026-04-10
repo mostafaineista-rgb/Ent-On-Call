@@ -3,6 +3,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/resident.dart';
 import '../models/specialist.dart';
 import '../services/repository.dart';
+import '../widgets/resident_pixel_sprite.dart';
+
 
 class ResidentsScreen extends StatefulWidget {
   const ResidentsScreen({super.key});
@@ -69,7 +71,7 @@ class _ResidentsScreenState extends State<ResidentsScreen> {
           title: const Text('دليل الهواتف', style: TextStyle(fontWeight: FontWeight.bold)),
           bottom: TabBar(
             labelColor: Colors.white,
-            unselectedLabelColor: Colors.white.withOpacity(0.6),
+            unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
             indicatorColor: Colors.white,
             indicatorWeight: 3,
             labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
@@ -109,18 +111,12 @@ class _ResidentsScreenState extends State<ResidentsScreen> {
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            leading: CircleAvatar(
-              radius: 24,
-              backgroundColor: res.isAdmin ? Colors.red.shade50 : Colors.blue.shade50,
-              child: Text(
-                res.name.isNotEmpty ? res.name[0] : '?',
-                style: TextStyle(
-                  color: res.isAdmin ? Colors.red.shade900 : Colors.blue.shade900,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
+            leading: const ResidentPixelSprite(
+              size: 52,
+              scale: 1.6,
+              useCircleBackground: true,
             ),
+
             title: Text(res.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 4),

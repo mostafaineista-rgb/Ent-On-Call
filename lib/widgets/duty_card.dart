@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import '../models/duty.dart';
 import '../models/resident.dart';
 import '../models/specialist.dart';
+import '../models/daily_specialist.dart';
 import '../utils/date_utils.dart';
 
 class DutyCard extends StatelessWidget {
   final Duty duty;
   final List<Resident> allResidents;
   final List<Specialist> allSpecialists;
+  final DailySpecialistAssignment? specialistAssignment;
   final bool isToday;
 
   const DutyCard({
@@ -15,6 +17,7 @@ class DutyCard extends StatelessWidget {
     required this.duty,
     required this.allResidents,
     required this.allSpecialists,
+    this.specialistAssignment,
     this.isToday = false,
   });
 
@@ -23,14 +26,14 @@ class DutyCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12.0),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.1), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.1), width: 1),
       ),
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: color.withOpacity(0.15),
+            backgroundColor: color.withValues(alpha: 0.15),
             radius: 20,
             child: Icon(icon, color: color, size: 20),
           ),
@@ -104,7 +107,7 @@ class DutyCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.1),
+                    color: primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -133,7 +136,7 @@ class DutyCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: primaryColor.withOpacity(0.3),
+                          color: primaryColor.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -187,6 +190,75 @@ class DutyCard extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 20),
                   child: Text('لم يتم تحديد فريق بعد', style: TextStyle(color: Colors.grey)),
+                ),
+              ),
+
+            // --- Specialist Team Section ---
+            const SizedBox(height: 24),
+            const Text(
+              'فريق الاختصاصيين',
+              style: TextStyle(
+                fontSize: 16, 
+                fontWeight: FontWeight.bold,
+                color: Colors.black54,
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.only(top: 8, bottom: 16),
+              child: Divider(height: 1),
+            ),
+
+            if (DutyDateUtils.isFridayDate(duty.date))
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.green.shade100),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.stars_rounded, color: Colors.green.shade700, size: 24),
+                    const SizedBox(width: 12),
+                    Text(
+                      'جمعة مباركة',
+                      style: TextStyle(
+                        fontSize: 18, 
+                        fontWeight: FontWeight.bold, 
+                        color: Colors.green.shade900,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else if (specialistAssignment != null)
+              Column(
+                children: [
+                   _buildRoleRow(
+                    'الاختصاصي خفر العمليات', 
+                    specialistAssignment!.orSpecialistNames.isNotEmpty 
+                        ? specialistAssignment!.orSpecialistNames.join(' / ') 
+                        : 'غير محدد', 
+                    Icons.biotech_rounded, 
+                    Colors.blue.shade700
+                  ),
+                  _buildRoleRow(
+                    'الاختصاصي في الاستشارية', 
+                    specialistAssignment!.consultationSpecialistNames.isNotEmpty 
+                        ? specialistAssignment!.consultationSpecialistNames.join(' / ') 
+                        : 'غير محدد', 
+                    Icons.assignment_ind_rounded, 
+                    Colors.teal.shade700
+                  ),
+                ],
+              )
+            else
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: Text('لم يتم تحديد جدول الاختصاصيين بعد', style: TextStyle(color: Colors.grey, fontSize: 13)),
                 ),
               ),
           ],

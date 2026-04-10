@@ -4,9 +4,10 @@ import 'package:http/http.dart' as http;
 import '../models/duty.dart';
 import '../models/resident.dart';
 import '../models/specialist.dart';
+import '../models/daily_specialist.dart';
 
 class ApiService {
-  static const String apiUrl = 'https://script.google.com/macros/s/AKfycbx_jz3sdpZEq-wDiKVkyCuglFYmG7_itoJstcFzVhlnPL1hjBEMI6l0Rnk7u1bCrwXM7Q/exec';
+  static const String apiUrl = 'https://script.google.com/macros/s/AKfycbwsnZHzPeNQKPztYYCwL5W6QXPP4MgugQDrn1EOrBq2BXD7uIGXYdzsMdpS-e67ZNW0jw/exec';
   // Secret key for Apps Script access - provided in requirement
   static const String appsScriptSecret = 'ent_secret_2026';
 
@@ -62,6 +63,31 @@ class ApiService {
           .toList();
     }
     return [];
+  }
+
+  Future<List<DailySpecialistAssignment>> fetchDailySpecialists() async {
+    final data = await fetchData();
+    final list = data['specialists_daily'] ?? data['specialist_daily'];
+    
+    List<DailySpecialistAssignment> assignments = [];
+    if (list != null && list is List) {
+      assignments = list
+          .map((json) => DailySpecialistAssignment.fromJson(json))
+          .where((a) => a.date.isNotEmpty) // Filter out empty dates
+          .toList();
+      debugPrint('Loaded ${assignments.length} daily specialist assignments');
+    }
+    
+    // Fallback: If list is empty or doesn't have today, but we have specialists_today key
+    if (data.containsKey('specialists_today')) {
+      final todayJson = data['specialists_today'];
+      debugPrint('Bootstrap contains specialists_today: $todayJson');
+      if (todayJson is Map<String, dynamic> && todayJson['date'] != null && todayJson['date'].toString().isNotEmpty) {
+        assignments.add(DailySpecialistAssignment.fromJson(todayJson));
+      }
+    }
+    
+    return assignments;
   }
 
   /// Specialized updateResident to handle Web CORS issues

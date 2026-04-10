@@ -19,43 +19,68 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _bootstrapApp() async {
+    debugPrint('--- SPLASH BOOTSTRAP START ---');
     final repository = Repository();
     
     try {
-      // Attempt to refresh data from network, ignore error if offline since cache is used
-      await repository.refreshData();
+      debugPrint('Refreshing Data...');
+      // Attempt to refresh data from network with a timeout.
+      // If the connection is slow, we proceed with cached data.
+      await repository.refreshData().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('Data refresh timed out after 10s, using cached data.');
+        },
+      );
+      debugPrint('Data Refreshed.');
     } catch (e) {
-      debugPrint('Offline or refresh failed, using cache.');
+      debugPrint('Offline or refresh failed, using cache. Error: $e');
     }
 
-    final authService = AuthService(repository);
-    final user = await authService.getLoggedInUser();
+    try {
+      debugPrint('Getting Logged In User...');
+      final authService = AuthService(repository);
+      final user = await authService.getLoggedInUser();
+      debugPrint('User found: ${user?.name ?? "Guest"}');
 
-    if (!mounted) return;
+      if (!mounted) {
+        debugPrint('Splash Screen not mounted, aborting navigation.');
+        return;
+      }
 
-    if (user != null) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const MainTabScreen()),
-      );
-    } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
+      if (user != null) {
+        debugPrint('Navigating to MainTabScreen...');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const MainTabScreen()),
+        );
+      } else {
+        debugPrint('Navigating to LoginScreen...');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      }
+    } catch (e, stack) {
+      debugPrint('FATAL ERROR during bootstrap: $e');
+      debugPrint(stack.toString());
+    } finally {
+      debugPrint('--- SPLASH BOOTSTRAP END ---');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    debugPrint('Building SplashScreen...');
+    return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.local_hospital, size: 80, color: Colors.blue),
-            SizedBox(height: 24),
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text(
+            const Icon(Icons.local_hospital, size: 80, color: Colors.blue),
+            const SizedBox(height: 24),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            const Text(
               'جاري التحميل...',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),

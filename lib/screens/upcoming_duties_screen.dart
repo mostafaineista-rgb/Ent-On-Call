@@ -5,6 +5,7 @@ import '../models/specialist.dart';
 import '../services/repository.dart';
 import '../utils/date_utils.dart';
 import '../widgets/duty_card.dart';
+import '../models/daily_specialist.dart';
 
 class UpcomingDutiesScreen extends StatefulWidget {
   const UpcomingDutiesScreen({super.key});
@@ -18,6 +19,7 @@ class _UpcomingDutiesScreenState extends State<UpcomingDutiesScreen> {
   List<Duty> _duties = [];
   List<Resident> _allResidents = [];
   List<Specialist> _allSpecialists = [];
+  List<DailySpecialistAssignment> _allSpecialistAssignments = [];
   bool _isLoading = true;
 
   @override
@@ -32,11 +34,13 @@ class _UpcomingDutiesScreenState extends State<UpcomingDutiesScreen> {
       final duties = await _repository.getDuties();
       final residents = await _repository.getResidents();
       final specialists = await _repository.getSpecialists();
+      final specialistAssignments = await _repository.getDailySpecialists();
       final todayDate = DutyDateUtils.getCurrentDutyDate();
 
       setState(() {
         _allResidents = residents;
         _allSpecialists = specialists;
+        _allSpecialistAssignments = specialistAssignments;
         // Filter out past duties, keep today and future
         _duties = duties.where((d) => d.date.compareTo(todayDate) > 0).toList();
         // Sort by date ascending
@@ -75,6 +79,7 @@ class _UpcomingDutiesScreenState extends State<UpcomingDutiesScreen> {
                         duty: _duties[index],
                         allResidents: _allResidents,
                         allSpecialists: _allSpecialists,
+                        specialistAssignment: _allSpecialistAssignments.where((a) => a.date == _duties[index].date).firstOrNull,
                       ),
                     );
                   },

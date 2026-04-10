@@ -1,4 +1,4 @@
-package com.example.ent_on_call
+package com.mos.ent_on_call
 
 import io.flutter.embedding.android.FlutterActivity
 

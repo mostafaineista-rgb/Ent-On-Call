@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../models/duty.dart';
 import '../models/resident.dart';
 import '../models/specialist.dart';
+import '../models/daily_specialist.dart';
 import 'api_service.dart';
 import 'cache_service.dart';
 
@@ -33,6 +34,13 @@ class Repository {
             .toList();
         await _cacheService.saveDuties(duties);
       }
+
+      if (data.containsKey('specialists_daily')) {
+        final dailySpecialists = (data['specialists_daily'] as List)
+            .map((json) => DailySpecialistAssignment.fromJson(json))
+            .toList();
+        await _cacheService.saveDailySpecialists(dailySpecialists);
+      }
     } catch (e) {
       debugPrint('Refresh failed: $e');
       throw Exception('Could not refresh data. Check internet connection.');
@@ -49,6 +57,10 @@ class Repository {
 
   Future<List<Duty>> getDuties() async {
     return await _cacheService.getDuties();
+  }
+
+  Future<List<DailySpecialistAssignment>> getDailySpecialists() async {
+    return await _cacheService.getDailySpecialists();
   }
 
   // Admin Actions - Residents

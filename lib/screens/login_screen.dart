@@ -93,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 120,
                         width: 120,
                         decoration: BoxDecoration(
-                          color: primaryColor.withOpacity(0.03),
+                          color: primaryColor.withValues(alpha: 0.03),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -101,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 100,
                         width: 100,
                         decoration: BoxDecoration(
-                          color: primaryColor.withOpacity(0.07),
+                          color: primaryColor.withValues(alpha: 0.07),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -109,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 80,
                         width: 80,
                         decoration: BoxDecoration(
-                          color: primaryColor.withOpacity(0.12),
+                          color: primaryColor.withValues(alpha: 0.12),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(Icons.medical_services_rounded, size: 40, color: primaryColor),
@@ -174,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _isLoading ? null : _login,
                     style: ElevatedButton.styleFrom(
                       elevation: 4,
-                      shadowColor: primaryColor.withOpacity(0.4),
+                      shadowColor: primaryColor.withValues(alpha: 0.4),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),

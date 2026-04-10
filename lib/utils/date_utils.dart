@@ -1,6 +1,31 @@
 import 'package:intl/intl.dart';
 
 class DutyDateUtils {
+  /// Returns the DateTime object of the current duty date (Baghdad time).
+  static DateTime getCurrentDutyDateTime() {
+    final now = DateTime.now().toUtc().add(const Duration(hours: 3));
+    DateTime dutyDate = now;
+    if (dutyDate.hour < 8) {
+      dutyDate = dutyDate.subtract(const Duration(days: 1));
+    }
+    return dutyDate;
+  }
+
+  /// Returns true if the current duty date is Friday.
+  static bool isFriday() {
+    return getCurrentDutyDateTime().weekday == DateTime.friday;
+  }
+
+  /// Returns true if the given date string (YYYY-MM-DD) is Friday.
+  static bool isFridayDate(String dateString) {
+    try {
+      final dateTime = DateTime.parse(dateString);
+      return dateTime.weekday == DateTime.friday;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Returns the current duty date in YYYY-MM-DD format based on Baghdad time (UTC+3).
   /// A duty day starts at 8:00 AM and ends at 7:59 AM the next day.
   static String getCurrentDutyDate() {
