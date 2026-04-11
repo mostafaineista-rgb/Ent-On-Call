@@ -1,6 +1,6 @@
 {
-  "latest_version": "1.1.1",
-  "build_number": 5,
-  "download_url": "https://github.com/mostafaineista-rgb/Ent-On-Call/releases/download/v1.1.1/app-release.apk",
-  "release_notes": "ENT-ON-CALL 1.1.1+5: Fixed specialist display in 'My Duties' screen and improved data consistency."
+  "latest_version": "1.2.0",
+  "build_number": 6,
+  "download_url": "https://github.com/mostafaineista-rgb/Ent-On-Call/releases/download/v1.2.0/app-release.apk",
+  "release_notes": "ENT-ON-CALL 1.2.0+6: Major performance boost with instant startup and background syncing. New premium Lottie animations for a smoother experience."
 }
