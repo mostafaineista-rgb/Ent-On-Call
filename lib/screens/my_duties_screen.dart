@@ -5,6 +5,7 @@ import '../models/specialist.dart';
 import '../services/auth_service.dart';
 import '../services/repository.dart';
 import '../widgets/duty_card.dart';
+import '../models/daily_specialist.dart';
 
 class MyDutiesScreen extends StatefulWidget {
   const MyDutiesScreen({super.key});
@@ -19,6 +20,7 @@ class _MyDutiesScreenState extends State<MyDutiesScreen> {
   List<Duty> _myDuties = [];
   List<Resident> _allResidents = [];
   List<Specialist> _allSpecialists = [];
+  List<DailySpecialistAssignment> _allSpecialistAssignments = [];
   bool _isLoading = true;
 
   @override
@@ -36,10 +38,12 @@ class _MyDutiesScreenState extends State<MyDutiesScreen> {
       final duties = await _repository.getDuties();
       final residents = await _repository.getResidents();
       final specialists = await _repository.getSpecialists();
+      final specialistAssignments = await _repository.getDailySpecialists();
 
       setState(() {
         _allResidents = residents;
         _allSpecialists = specialists;
+        _allSpecialistAssignments = specialistAssignments;
         _myDuties = duties.where((d) => d.residentIds.contains(user.id)).toList();
         _myDuties.sort((a, b) => a.date.compareTo(b.date));
       });
@@ -76,6 +80,7 @@ class _MyDutiesScreenState extends State<MyDutiesScreen> {
                         duty: _myDuties[index],
                         allResidents: _allResidents,
                         allSpecialists: _allSpecialists,
+                        specialistAssignment: _allSpecialistAssignments.where((a) => a.date == _myDuties[index].date).firstOrNull,
                       ),
                     );
                   },

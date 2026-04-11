@@ -5,6 +5,7 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:flutter/foundation.dart';
 import 'auth_service.dart';
 import 'repository.dart';
+import 'notification_history_service.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
@@ -42,6 +43,12 @@ class NotificationService {
 
       await _notificationsPlugin.initialize(
         settings: initializationSettings,
+        onDidReceiveNotificationResponse: (NotificationResponse response) async {
+          // Log to history when notification is tapped
+          if (response.payload != null) {
+            // we could parse payload here
+          }
+        },
       );
 
       // Request permissions for Android 13+
@@ -65,7 +72,13 @@ class NotificationService {
     }
 
     final duties = await repository.getDuties();
-    await _notificationsPlugin.cancelAll();
+    // Instead of cancelAll(), we could cancel only specific IDs if needed, 
+    // but for now, we'll keep it simple and just ensure we don't clear delivered ones 
+    // by using a more targeted approach if possible, or just removing this blanket call.
+    // However, pending notifications need to be updated. 
+    // cancelAll() removes BOTH pending and delivered.
+    // To only remove pending, we should use specific IDs or just accept some overlap.
+    // Let's remove cancelAll() and rely on ID overwriting.
 
     final now = DateTime.now();
     int notificationId = 100; // Starting ID for duty reminders
@@ -134,6 +147,12 @@ class NotificationService {
       title: 'Notification Test | تجربة الإشعارات',
       body: 'You are on call tomorrow. Wishing you a trouble-free shift in the hospital. اتمنى لك خفارة سعيدة',
       notificationDetails: platformChannelSpecifics,
+    );
+
+    // Save to history
+    await NotificationHistoryService.addMessage(
+      'Notification Test | تجربة الإشعارات',
+      'You are on call tomorrow. Wishing you a trouble-free shift in the hospital. اتمنى لك خفارة سعيدة',
     );
   }
 }

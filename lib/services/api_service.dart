@@ -13,9 +13,36 @@ class ApiService {
 
   Future<Map<String, dynamic>> fetchData() async {
     try {
+      debugPrint('ApiService: Fetching bootstrap data...');
+      
+      if (kIsWeb) {
+        // On Web, redirects are automatic. Simple GET first.
+        try {
+          final response = await http.get(Uri.parse('$apiUrl?action=bootstrap'));
+          if (response.statusCode == 200) {
+            return jsonDecode(response.body);
+          }
+          debugPrint('ApiService Web GET status: ${response.statusCode}');
+        } catch (e) {
+          debugPrint('ApiService Web GET failed: $e. Trying POST fallback...');
+          // Fallback to POST which sometimes handles Apps Script CORS better on Web
+          final postResponse = await http.post(
+            Uri.parse(apiUrl),
+            body: {'action': 'bootstrap'},
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          );
+          if (postResponse.statusCode == 200 || postResponse.statusCode == 302) {
+             // If we get a 302 on POST, it's rare on web but we handle the body if it returned data
+             return jsonDecode(postResponse.body);
+          }
+        }
+      }
+
+      // Default / Native path
       final response = await http.get(Uri.parse('$apiUrl?action=bootstrap'));
       
-      if (response.statusCode == 302) {
+      // Handle Apps Script manual redirects for Native
+      if (response.statusCode == 302 || response.statusCode == 301) {
         final newUrl = response.headers['location'];
         if (newUrl != null) {
           final redirectedResponse = await http.get(Uri.parse(newUrl));
@@ -28,9 +55,10 @@ class ApiService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Failed to load data from server. Status: ${response.statusCode}');
+        throw Exception('Server returned status ${response.statusCode}');
       }
     } catch (e) {
+      debugPrint('ApiService Error: $e');
       throw Exception('Network error: $e');
     }
   }

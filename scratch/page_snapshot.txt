@@ -1,0 +1,491 @@
+uid=2_0 RootWebArea "Page not found · GitHub · GitHub" url="https://github.com/mostafaineista-rgb/Ent-On-Call/releases/edit/v1.1.1"
+  uid=2_1 ignored
+    uid=2_2 ignored
+      uid=2_3 ignored
+        uid=2_4 generic
+        uid=2_5 generic
+          uid=2_6 link "Skip to content" url="https://github.com/mostafaineista-rgb/Ent-On-Call/releases/edit/v1.1.1#start-of-content"
+            uid=2_7 StaticText "Skip to content"
+              uid=2_8 InlineTextBox "S"
+              uid=2_8 InlineTextBox "k"
+              uid=2_8 InlineTextBox "i"
+              uid=2_8 InlineTextBox "p "
+              uid=2_8 InlineTextBox "t"
+              uid=2_8 InlineTextBox "o "
+              uid=2_8 InlineTextBox "c"
+              uid=2_8 InlineTextBox "o"
+              uid=2_8 InlineTextBox "n"
+              uid=2_8 InlineTextBox "t"
+              uid=2_8 InlineTextBox "e"
+              uid=2_8 InlineTextBox "n"
+              uid=2_8 InlineTextBox "t"
+          uid=2_9 ignored
+            uid=2_10 ignored
+          uid=2_11 ignored
+            uid=2_12 generic
+          uid=2_13 banner
+            uid=2_14 heading "Navigation Menu" level="2"
+              uid=2_15 StaticText "Navigation Menu"
+                uid=2_8 InlineTextBox "Navigation "
+                uid=2_8 InlineTextBox "Menu"
+            uid=2_16 generic
+              uid=2_17 ignored
+                uid=2_18 ignored
+                uid=2_19 link "Homepage" url="https://github.com/"
+                uid=2_20 ignored
+                  uid=2_21 ignored
+                    uid=2_22 ignored
+              uid=2_23 generic
+                uid=2_24 ignored
+                  uid=2_25 ignored
+                    uid=2_26 generic
+                      uid=2_27 navigation "Global"
+                        uid=2_28 list
+                          uid=2_29 listitem level="1"
+                            uid=2_30 generic
+                              uid=2_31 button "Platform" expandable
+                                uid=2_32 StaticText "Platform"
+                                  uid=2_8 InlineTextBox "Platform"
+                          uid=2_33 listitem level="1"
+                            uid=2_34 generic
+                              uid=2_35 button "Solutions" expandable
+                                uid=2_36 StaticText "Solutions"
+                                  uid=2_8 InlineTextBox "Solutions"
+                          uid=2_37 listitem level="1"
+                            uid=2_38 generic
+                              uid=2_39 button "Resources" expandable
+                                uid=2_40 StaticText "Resources"
+                                  uid=2_8 InlineTextBox "Resources"
+                          uid=2_41 listitem level="1"
+                            uid=2_42 generic
+                              uid=2_43 button "Open Source" expandable
+                                uid=2_44 StaticText "Open Source"
+                                  uid=2_8 InlineTextBox "Open Source"
+                          uid=2_45 listitem level="1"
+                            uid=2_46 generic
+                              uid=2_47 button "Enterprise" expandable
+                                uid=2_48 StaticText "Enterprise"
+                                  uid=2_8 InlineTextBox "Enterprise"
+                          uid=2_49 listitem level="1"
+                            uid=2_50 link "Pricing" url="https://github.com/pricing"
+                              uid=2_51 ignored
+                                uid=2_52 StaticText "Pricing"
+                                  uid=2_8 InlineTextBox "Pricing"
+                  uid=2_53 ignored
+                    uid=2_54 ignored
+                      uid=2_55 generic
+                        uid=2_56 button "Search or jump to…" haspopup="dialog"
+                          uid=2_57 ignored
+                        uid=2_58 ignored
+                          uid=2_59 ignored
+                        uid=2_60 ignored
+                          uid=2_61 ignored
+                        uid=2_62 ignored
+                        uid=2_63 ignored
+                          uid=2_64 ignored
+                        uid=2_65 ignored
+                          uid=2_66 ignored
+                            uid=2_67 ignored
+                              uid=2_68 ignored
+                          uid=2_69 ignored
+                      uid=2_70 ignored
+                        uid=2_71 ignored
+                          uid=2_72 ignored
+                        uid=2_73 ignored
+                        uid=2_74 ignored
+                          uid=2_75 ignored
+                        uid=2_76 generic
+                          uid=2_77 ignored
+                            uid=2_78 ignored
+                          uid=2_79 ignored
+                            uid=2_80 ignored
+                          uid=2_81 ignored
+                            uid=2_82 ignored
+                          uid=2_83 ignored
+                          uid=2_84 ignored
+                          uid=2_85 ignored
+                            uid=2_86 ignored
+                          uid=2_87 ignored
+                          uid=2_88 ignored
+                    uid=2_89 generic
+                      uid=2_90 link "Sign in" url="https://github.com/login?return_to=https%3A%2F%2Fgithub.com%2Fmostafaineista-rgb%2FEnt-On-Call%2Freleases%2Fedit%2Fv1.1.1"
+                        uid=2_91 StaticText "Sign in"
+                          uid=2_8 InlineTextBox "Sign in"
+                      uid=2_92 generic
+                        uid=2_93 generic
+                          uid=2_94 heading "Sign in to GitHub" level="4"
+                            uid=2_95 StaticText "Sign in to GitHub"
+                              uid=2_8 InlineTextBox "Sign in to GitHub"
+                          uid=2_96 generic
+                            uid=2_97 LabelText
+                              uid=2_98 StaticText "Username or email address"
+                                uid=2_8 InlineTextBox "Username or email address"
+                            uid=2_99 textbox "Username or email address" focusable focused required
+                              uid=2_100 generic
+                            uid=2_101 generic
+                              uid=2_102 LabelText
+                                uid=2_103 StaticText "Password"
+                                  uid=2_8 InlineTextBox "Password"
+                              uid=2_104 textbox "Password" required
+                                uid=2_105 generic
+                              uid=2_106 link "Forgot password?" url="https://github.com/password_reset"
+                                uid=2_107 StaticText "Forgot password?"
+                                  uid=2_8 InlineTextBox "Forgot password?"
+                              uid=2_108 ignored
+                              uid=2_109 button "Sign in"
+                                uid=2_110 StaticText "Sign in"
+                                  uid=2_8 InlineTextBox "Sign in"
+                          uid=2_111 ignored
+                            uid=2_112 ignored
+                              uid=2_113 link "or continue with other methods" url="https://github.com/login?return_to=https%3A%2F%2Fgithub.com%2Fmostafaineista-rgb%2FEnt-On-Call%2Freleases%2Fedit%2Fv1.1.1"
+                                uid=2_114 ignored
+                                  uid=2_115 ignored
+                                    uid=2_116 StaticText "or continue with other methods"
+                                      uid=2_8 InlineTextBox "or continue with other methods"
+                    uid=2_117 link "Sign up" url="https://github.com/signup?ref_cta=Sign+up&ref_loc=header+logged+out&ref_page=%2Fmostafaineista-rgb%2FEnt-On-Call%2Freleases%2Fedit%2Fv1.1.1&source=header"
+                      uid=2_118 StaticText "Sign up"
+                        uid=2_8 InlineTextBox "Sign up"
+                    uid=2_119 ignored
+                      uid=2_120 ignored
+                        uid=2_121 button "Appearance settings" expandable haspopup="menu"
+                        uid=2_122 ignored
+                          uid=2_123 ignored
+                            uid=2_124 ignored
+                        uid=2_125 ignored
+                          uid=2_126 generic
+          uid=2_127 ignored
+            uid=2_128 ignored
+              uid=2_129 ignored
+        uid=2_130 generic
+        uid=2_131 generic
+        uid=2_132 ignored
+          uid=2_133 main
+            uid=2_134 generic
+              uid=2_135 generic
+                uid=2_136 ignored
+              uid=2_137 generic
+                uid=2_138 image "404 “This is not the web page you are looking for”" url="data:image/png;base64,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"
+                uid=2_139 ignored
+                uid=2_140 ignored
+                uid=2_141 ignored
+                uid=2_142 ignored
+                uid=2_143 ignored
+                uid=2_144 ignored
+            uid=2_145 ignored
+              uid=2_146 search
+                uid=2_147 LabelText
+                  uid=2_148 StaticText "Find code, projects, and people on GitHub:"
+                    uid=2_8 InlineTextBox "Find code, projects, and people on GitHub:"
+                uid=2_149 ignored
+                  uid=2_150 textbox "Find code, projects, and people on GitHub:"
+                    uid=2_151 generic
+                  uid=2_152 button "Search"
+                    uid=2_153 StaticText "Search"
+                      uid=2_8 InlineTextBox "Search"
+              uid=2_154 generic
+                uid=2_155 link "Contact Support" url="https://support.github.com/?tags=dotcom-404"
+                  uid=2_156 StaticText "Contact Support"
+                    uid=2_8 InlineTextBox "Contact Support"
+                uid=2_157 StaticText " — "
+                  uid=2_8 InlineTextBox " — "
+                uid=2_158 link "GitHub Status" url="https://githubstatus.com/"
+                  uid=2_159 StaticText "GitHub Status"
+                    uid=2_8 InlineTextBox "GitHub Status"
+                uid=2_160 StaticText " — "
+                  uid=2_8 InlineTextBox " — "
+                uid=2_161 link "@githubstatus" url="https://x.com/githubstatus"
+                  uid=2_162 StaticText "@githubstatus"
+                    uid=2_8 InlineTextBox "@githubstatus"
+        uid=2_163 contentinfo
+          uid=2_164 heading "Site-wide Links" level="2"
+            uid=2_165 StaticText "Site-wide Links"
+              uid=2_8 InlineTextBox "Site-"
+              uid=2_8 InlineTextBox "wide "
+              uid=2_8 InlineTextBox "Links"
+          uid=2_166 ignored
+            uid=2_167 ignored
+              uid=2_168 generic
+                uid=2_169 link "Go to GitHub homepage" url="https://github.com/"
+                uid=2_170 heading "Subscribe to our developer newsletter" level="3"
+                  uid=2_171 StaticText "Subscribe to our developer newsletter"
+                    uid=2_8 InlineTextBox "Subscribe to our developer newsletter"
+                uid=2_172 paragraph
+                  uid=2_173 StaticText "Get tips, technical guides, and best practices. Twice a month."
+                    uid=2_8 InlineTextBox "Get tips, technical guides, and best practices. "
+                    uid=2_8 InlineTextBox "Twice a month."
+                uid=2_174 link "Subscribe" url="https://github.com/newsletter"
+                  uid=2_175 StaticText "Subscribe"
+                    uid=2_8 InlineTextBox "Subscribe"
+              uid=2_176 navigation "Platform"
+                uid=2_177 heading "Platform" level="3"
+                  uid=2_178 StaticText "Platform"
+                    uid=2_8 InlineTextBox "Platform"
+                uid=2_179 list
+                  uid=2_180 listitem level="1"
+                    uid=2_181 link "Features" url="https://github.com/features"
+                      uid=2_182 StaticText "Features"
+                        uid=2_8 InlineTextBox "Features"
+                  uid=2_183 listitem level="1"
+                    uid=2_184 link "Enterprise" url="https://github.com/enterprise"
+                      uid=2_185 StaticText "Enterprise"
+                        uid=2_8 InlineTextBox "Enterprise"
+                  uid=2_186 listitem level="1"
+                    uid=2_187 link "Copilot" url="https://github.com/features/copilot"
+                      uid=2_188 StaticText "Copilot"
+                        uid=2_8 InlineTextBox "Copilot"
+                  uid=2_189 listitem level="1"
+                    uid=2_190 link "AI" url="https://github.com/features/ai"
+                      uid=2_191 StaticText "AI"
+                        uid=2_8 InlineTextBox "AI"
+                  uid=2_192 listitem level="1"
+                    uid=2_193 link "Security" url="https://github.com/security"
+                      uid=2_194 StaticText "Security"
+                        uid=2_8 InlineTextBox "Security"
+                  uid=2_195 listitem level="1"
+                    uid=2_196 link "Pricing" url="https://github.com/pricing"
+                      uid=2_197 StaticText "Pricing"
+                        uid=2_8 InlineTextBox "Pricing"
+                  uid=2_198 listitem level="1"
+                    uid=2_199 link "Team" url="https://github.com/team"
+                      uid=2_200 StaticText "Team"
+                        uid=2_8 InlineTextBox "Team"
+                  uid=2_201 listitem level="1"
+                    uid=2_202 link "Resources" url="https://resources.github.com/"
+                      uid=2_203 StaticText "Resources"
+                        uid=2_8 InlineTextBox "Resources"
+                  uid=2_204 listitem level="1"
+                    uid=2_205 link "Roadmap" url="https://github.com/github/roadmap"
+                      uid=2_206 StaticText "Roadmap"
+                        uid=2_8 InlineTextBox "Roadmap"
+                  uid=2_207 listitem level="1"
+                    uid=2_208 link "Compare GitHub" url="https://github.com/resources/articles/devops-tools-comparison"
+                      uid=2_209 StaticText "Compare GitHub"
+                        uid=2_8 InlineTextBox "Compare GitHub"
+              uid=2_210 navigation "Ecosystem"
+                uid=2_211 heading "Ecosystem" level="3"
+                  uid=2_212 StaticText "Ecosystem"
+                    uid=2_8 InlineTextBox "Ecosystem"
+                uid=2_213 list
+                  uid=2_214 listitem level="1"
+                    uid=2_215 link "Developer API" url="https://docs.github.com/get-started/exploring-integrations/about-building-integrations"
+                      uid=2_216 StaticText "Developer API"
+                        uid=2_8 InlineTextBox "Developer API"
+                  uid=2_217 listitem level="1"
+                    uid=2_218 link "Partners" url="https://partner.github.com/"
+                      uid=2_219 StaticText "Partners"
+                        uid=2_8 InlineTextBox "Partners"
+                  uid=2_220 listitem level="1"
+                    uid=2_221 link "Education" url="https://github.com/edu"
+                      uid=2_222 StaticText "Education"
+                        uid=2_8 InlineTextBox "Education"
+                  uid=2_223 listitem level="1"
+                    uid=2_224 link "GitHub CLI" url="https://cli.github.com/"
+                      uid=2_225 StaticText "GitHub CLI"
+                        uid=2_8 InlineTextBox "GitHub CLI"
+                  uid=2_226 listitem level="1"
+                    uid=2_227 link "GitHub Desktop" url="https://desktop.github.com/"
+                      uid=2_228 StaticText "GitHub Desktop"
+                        uid=2_8 InlineTextBox "GitHub Desktop"
+                  uid=2_229 listitem level="1"
+                    uid=2_230 link "GitHub Mobile" url="https://github.com/mobile"
+                      uid=2_231 StaticText "GitHub Mobile"
+                        uid=2_8 InlineTextBox "GitHub Mobile"
+                  uid=2_232 listitem level="1"
+                    uid=2_233 link "GitHub Marketplace" url="https://github.com/marketplace"
+                      uid=2_234 StaticText "GitHub Marketplace"
+                        uid=2_8 InlineTextBox "GitHub Marketplace"
+                  uid=2_235 listitem level="1"
+                    uid=2_236 link "MCP Registry" url="https://github.com/mcp"
+                      uid=2_237 StaticText "MCP Registry"
+                        uid=2_8 InlineTextBox "MCP Registry"
+              uid=2_238 navigation "Support"
+                uid=2_239 heading "Support" level="3"
+                  uid=2_240 StaticText "Support"
+                    uid=2_8 InlineTextBox "Support"
+                uid=2_241 list
+                  uid=2_242 listitem level="1"
+                    uid=2_243 link "Docs" url="https://docs.github.com/"
+                      uid=2_244 StaticText "Docs"
+                        uid=2_8 InlineTextBox "Docs"
+                  uid=2_245 listitem level="1"
+                    uid=2_246 link "Community Forum" url="https://github.community/"
+                      uid=2_247 StaticText "Community Forum"
+                        uid=2_8 InlineTextBox "Community Forum"
+                  uid=2_248 listitem level="1"
+                    uid=2_249 link "Professional Services" url="https://services.github.com/"
+                      uid=2_250 StaticText "Professional Services"
+                        uid=2_8 InlineTextBox "Professional Services"
+                  uid=2_251 listitem level="1"
+                    uid=2_252 link "Premium Support" url="https://github.com/enterprise/premium-support"
+                      uid=2_253 StaticText "Premium Support"
+                        uid=2_8 InlineTextBox "Premium Support"
+                  uid=2_254 listitem level="1"
+                    uid=2_255 link "Skills" url="https://skills.github.com/"
+                      uid=2_256 StaticText "Skills"
+                        uid=2_8 InlineTextBox "Skills"
+                  uid=2_257 listitem level="1"
+                    uid=2_258 link "Status" url="https://www.githubstatus.com/"
+                      uid=2_259 StaticText "Status"
+                        uid=2_8 InlineTextBox "Status"
+                  uid=2_260 listitem level="1"
+                    uid=2_261 link "Contact GitHub" url="https://support.github.com/?tags=dotcom-footer"
+                      uid=2_262 StaticText "Contact GitHub"
+                        uid=2_8 InlineTextBox "Contact GitHub"
+              uid=2_263 navigation "Company"
+                uid=2_264 heading "Company" level="3"
+                  uid=2_265 StaticText "Company"
+                    uid=2_8 InlineTextBox "Company"
+                uid=2_266 list
+                  uid=2_267 listitem level="1"
+                    uid=2_268 link "About" url="https://github.com/about"
+                      uid=2_269 StaticText "About"
+                        uid=2_8 InlineTextBox "About"
+                  uid=2_270 listitem level="1"
+                    uid=2_271 link "Why GitHub" url="https://github.com/why-github"
+                      uid=2_272 StaticText "Why GitHub"
+                        uid=2_8 InlineTextBox "Why GitHub"
+                  uid=2_273 listitem level="1"
+                    uid=2_274 link "Customer stories" url="https://github.com/customer-stories?type=enterprise"
+                      uid=2_275 StaticText "Customer stories"
+                        uid=2_8 InlineTextBox "Customer stories"
+                  uid=2_276 listitem level="1"
+                    uid=2_277 link "Blog" url="https://github.blog/"
+                      uid=2_278 StaticText "Blog"
+                        uid=2_8 InlineTextBox "Blog"
+                  uid=2_279 listitem level="1"
+                    uid=2_280 link "The ReadME Project" url="https://github.com/readme"
+                      uid=2_281 StaticText "The ReadME Project"
+                        uid=2_8 InlineTextBox "The ReadME Project"
+                  uid=2_282 listitem level="1"
+                    uid=2_283 link "Careers" url="https://github.careers/"
+                      uid=2_284 StaticText "Careers"
+                        uid=2_8 InlineTextBox "Careers"
+                  uid=2_285 listitem level="1"
+                    uid=2_286 link "Newsroom" url="https://github.com/newsroom"
+                      uid=2_287 StaticText "Newsroom"
+                        uid=2_8 InlineTextBox "Newsroom"
+                  uid=2_288 listitem level="1"
+                    uid=2_289 link "Inclusion" url="https://github.com/about/diversity"
+                      uid=2_290 StaticText "Inclusion"
+                        uid=2_8 InlineTextBox "Inclusion"
+                  uid=2_291 listitem level="1"
+                    uid=2_292 link "Social Impact" url="https://socialimpact.github.com/"
+                      uid=2_293 StaticText "Social Impact"
+                        uid=2_8 InlineTextBox "Social Impact"
+                  uid=2_294 listitem level="1"
+                    uid=2_295 link "Shop" url="https://shop.github.com/"
+                      uid=2_296 StaticText "Shop"
+                        uid=2_8 InlineTextBox "Shop"
+          uid=2_297 ignored
+            uid=2_298 ignored
+              uid=2_299 navigation "Legal and Resource Links"
+                uid=2_300 list
+                  uid=2_301 listitem level="1"
+                    uid=2_302 StaticText "© "
+                      uid=2_8 InlineTextBox "© "
+                    uid=2_303 time
+                      uid=2_304 StaticText "2026"
+                        uid=2_8 InlineTextBox "2026"
+                    uid=2_305 StaticText " GitHub, Inc."
+                      uid=2_8 InlineTextBox " GitHub, Inc."
+                  uid=2_306 listitem level="1"
+                    uid=2_307 link "Terms" url="https://docs.github.com/site-policy/github-terms/github-terms-of-service"
+                      uid=2_308 StaticText "Terms"
+                        uid=2_8 InlineTextBox "Terms"
+                  uid=2_309 listitem level="1"
+                    uid=2_310 link "Privacy" url="https://docs.github.com/site-policy/privacy-policies/github-privacy-statement"
+                      uid=2_311 StaticText "Privacy"
+                        uid=2_8 InlineTextBox "Privacy"
+                    uid=2_312 StaticText " "
+                      uid=2_8 InlineTextBox " "
+                    uid=2_313 link "(Updated 02/2024) 02/2024" url="https://github.com/github/site-policy/pull/582"
+                      uid=2_314 StaticText "(Updated 02/2024)"
+                        uid=2_8 InlineTextBox "(Updated 02/2024)"
+                      uid=2_315 time
+                        uid=2_316 StaticText "02/2024"
+                          uid=2_8 InlineTextBox "02/2024"
+                  uid=2_317 listitem level="1"
+                    uid=2_318 link "Sitemap" url="https://github.com/sitemap"
+                      uid=2_319 StaticText "Sitemap"
+                        uid=2_8 InlineTextBox "Sitemap"
+                  uid=2_320 listitem level="1"
+                    uid=2_321 link "What is Git?" url="https://github.com/git-guides"
+                      uid=2_322 StaticText "What is Git?"
+                        uid=2_8 InlineTextBox "What is Git?"
+                  uid=2_323 listitem level="1"
+                    uid=2_324 generic
+                      uid=2_325 button "Manage cookies"
+                        uid=2_326 StaticText "Manage cookies"
+                          uid=2_8 InlineTextBox "Manage cookies"
+                  uid=2_327 listitem level="1"
+                    uid=2_328 generic
+                      uid=2_329 button "Do not share my personal information"
+                        uid=2_330 StaticText "Do not share my personal information"
+                          uid=2_8 InlineTextBox "Do not share my personal information"
+              uid=2_331 navigation "GitHub's Social Media Links"
+                uid=2_332 list
+                  uid=2_333 listitem level="1"
+                    uid=2_334 link "GitHub on LinkedIn" url="https://www.linkedin.com/company/github"
+                      uid=2_335 ignored
+                        uid=2_336 StaticText "GitHub on LinkedIn"
+                          uid=2_8 InlineTextBox "GitHub "
+                          uid=2_8 InlineTextBox "on "
+                          uid=2_8 InlineTextBox "LinkedIn"
+                  uid=2_337 listitem level="1"
+                    uid=2_338 link "GitHub on Instagram" url="https://www.instagram.com/github"
+                      uid=2_339 ignored
+                        uid=2_340 StaticText "GitHub on Instagram"
+                          uid=2_8 InlineTextBox "GitHub "
+                          uid=2_8 InlineTextBox "on "
+                          uid=2_8 InlineTextBox "Instagram"
+                  uid=2_341 listitem level="1"
+                    uid=2_342 link "GitHub on YouTube" url="https://www.youtube.com/github"
+                      uid=2_343 ignored
+                        uid=2_344 StaticText "GitHub on YouTube"
+                          uid=2_8 InlineTextBox "GitHub "
+                          uid=2_8 InlineTextBox "on "
+                          uid=2_8 InlineTextBox "YouTube"
+                  uid=2_345 listitem level="1"
+                    uid=2_346 link "GitHub on X" url="https://x.com/github"
+                      uid=2_347 ignored
+                        uid=2_348 StaticText "GitHub on X"
+                          uid=2_8 InlineTextBox "GitHub "
+                          uid=2_8 InlineTextBox "on "
+                          uid=2_8 InlineTextBox "X"
+                  uid=2_349 listitem level="1"
+                    uid=2_350 link "GitHub on TikTok" url="https://www.tiktok.com/@github"
+                      uid=2_351 ignored
+                        uid=2_352 StaticText "GitHub on TikTok"
+                          uid=2_8 InlineTextBox "GitHub "
+                          uid=2_8 InlineTextBox "on "
+                          uid=2_8 InlineTextBox "TikTok"
+                  uid=2_353 listitem level="1"
+                    uid=2_354 link "GitHub on Twitch" url="https://www.twitch.tv/github"
+                      uid=2_355 ignored
+                        uid=2_356 StaticText "GitHub on Twitch"
+                          uid=2_8 InlineTextBox "GitHub "
+                          uid=2_8 InlineTextBox "on "
+                          uid=2_8 InlineTextBox "Twitch"
+                  uid=2_357 listitem level="1"
+                    uid=2_358 link "GitHub’s organization on GitHub" url="https://github.com/github"
+                      uid=2_359 ignored
+                        uid=2_360 StaticText "GitHub’s organization on GitHub"
+                          uid=2_8 InlineTextBox "GitHub’s "
+                          uid=2_8 InlineTextBox "organization "
+                          uid=2_8 InlineTextBox "on "
+                          uid=2_8 InlineTextBox "GitHub"
+                uid=2_361 generic
+                  uid=2_362 button "English - Select language" expandable haspopup="menu"
+                    uid=2_363 ignored
+                      uid=2_364 ignored
+                        uid=2_365 ignored
+                          uid=2_366 ignored
+                        uid=2_367 StaticText "English"
+                          uid=2_8 InlineTextBox "English"
+                        uid=2_368 ignored
+                          uid=2_369 ignored
+                  uid=2_370 generic
+                    uid=2_371 ignored
+        uid=2_372 generic
+      uid=2_373 generic atomic live="polite" relevant="additions text"
+      uid=2_374 generic atomic live="assertive" relevant="additions text"

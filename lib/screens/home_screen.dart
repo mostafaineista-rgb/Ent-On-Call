@@ -13,8 +13,10 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:lottie/lottie.dart';
 import 'specialists_page.dart';
 import 'settings_screen.dart';
+import 'notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -120,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> _loadData() async {
+  Future<void> _loadData({bool refreshFromNetwork = false}) async {
     setState(() => _isLoading = true);
     try {
       final duties = await _repository.getDuties();
@@ -135,28 +137,54 @@ class _HomeScreenState extends State<HomeScreen> {
         _allSpecialists = specialists;
         _currentDuty = duties.where((d) => d.date == todayDate).firstOrNull;
         
-        debugPrint('Looking for Daily Assignment for date: $todayDate');
-        debugPrint('Found ${dailyAssignments.length} daily assignments in repository.');
+        debugPrint('--- DATA LOAD DEBUG ---');
+        debugPrint('Today Duty Date (Baghdad): $todayDate');
+        debugPrint('System Timestamp: ${DateTime.now().toIso8601String()}');
+        debugPrint('Found ${dailyAssignments.length} daily assignments in cache.');
+        
         if (dailyAssignments.isNotEmpty) {
-          debugPrint('First daily assignment date: ${dailyAssignments.first.date}');
+          debugPrint('Available assignment dates: ${dailyAssignments.map((a) => a.date).join(', ')}');
         }
         
         _todaySpecialistAssignment = dailyAssignments.where((a) => a.date == todayDate).firstOrNull;
-        debugPrint('Matched Assignment for $todayDate: ${_todaySpecialistAssignment != null}');
+        
         if (_todaySpecialistAssignment != null) {
-          debugPrint('Has Any Specialist: ${_todaySpecialistAssignment!.hasAnySpecialist}');
+          debugPrint('✅ MATCH FOUND for $todayDate');
+          debugPrint('Has Any Specialist Details: ${_todaySpecialistAssignment!.hasAnySpecialist}');
+        } else {
+          debugPrint('❌ NO MATCH FOUND for $todayDate in available assignments.');
         }
         
         _currentUser = user;
         _lastSyncTime = DateTime.now();
+        debugPrint('-----------------------');
       });
 
       // Schedule notifications in the background
       NotificationService.scheduleDutyReminders(_authService, _repository);
+
+      // After showing cached data, silently refresh from network
+      if (!refreshFromNetwork) {
+        _backgroundRefresh();
+      }
     } catch (e) {
       debugPrint('Error loading current duty: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  /// Fetches fresh data from network without blocking UI, then reloads.
+  Future<void> _backgroundRefresh() async {
+    try {
+      debugPrint('Background refresh started...');
+      await _repository.refreshData();
+      debugPrint('Background refresh complete. Reloading UI...');
+      if (mounted) {
+        _loadData(refreshFromNetwork: true);
+      }
+    } catch (e) {
+      debugPrint('Background refresh failed (using cached data): $e');
     }
   }
 
@@ -171,12 +199,15 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          const Padding(
-            padding: EdgeInsets.only(right: 4.0),
-            child: ResidentPixelSprite(
-              size: 50,
-              scale: 1.6,
-              useCircleBackground: true,
+          Padding(
+            padding: const EdgeInsets.only(right: 4.0),
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 24),
             ),
           ),
           const SizedBox(width: 16),
@@ -221,15 +252,13 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_active_outlined),
-            onPressed: () async {
-              await NotificationService.showTestNotification();
-              if (kIsWeb && mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('الإشعارات لا تعمل على المتصفح. يرجى التجربة على الهاتف.')),
-                );
-              }
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+              );
             },
-            tooltip: 'تجربة الإشعارات',
+            tooltip: 'التنبيهات',
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
@@ -264,9 +293,22 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const CircularProgressIndicator(),
+                  SizedBox(
+                    width: 200,
+                    height: 200,
+                    child: Lottie.asset(
+                      'assets/images/self-protection.json',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                   const SizedBox(height: 16),
-                  Text('جاري تحميل البيانات...', style: TextStyle(color: Colors.grey.shade600)),
+                  Text(
+                    'جاري تحميل البيانات...',
+                    style: TextStyle(
+                      color: Colors.blue.shade700,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
               ),
             )
@@ -323,12 +365,33 @@ class _HomeScreenState extends State<HomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // 0. Doctor Hero Animation
-                            const Center(
+                            // 0. Hero Animation
+                            Center(
                               child: Padding(
-                                padding: EdgeInsets.only(bottom: 24.0, top: 12.0),
-                                child: ResidentPixelSprite(
-                                  size: 180,
-                                  useCircleBackground: true,
+                                padding: const EdgeInsets.only(bottom: 24.0, top: 12.0),
+                                child: Container(
+                                  width: 220,
+                                  height: 220,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: RadialGradient(
+                                      colors: [
+                                        Colors.blue.shade50,
+                                        Colors.white.withValues(alpha: 0.0),
+                                      ],
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.blue.withValues(alpha: 0.05),
+                                        blurRadius: 30,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Lottie.asset(
+                                    'assets/images/virus-disinfectant.json',
+                                    fit: BoxFit.contain,
+                                  ),
                                 ),
                               ),
                             ),

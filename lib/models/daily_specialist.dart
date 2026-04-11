@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart';
 
 class DailySpecialistAssignment {
   final String date; // Format: yyyy-MM-dd
@@ -33,6 +34,18 @@ class DailySpecialistAssignment {
     DateTime? parseDate(dynamic d) {
       if (d == null) return null;
       if (d is DateTime) return d;
+      
+      // Handle Numeric Serial Dates (from Google Sheets/Excel)
+      if (d is int || d is double) {
+        try {
+          // Google Sheets/Excel start from 1899-12-30
+          // For just dates (integers), we can use this
+          return DateTime(1899, 12, 30).add(Duration(days: d.toInt()));
+        } catch (_) {
+          return null;
+        }
+      }
+
       if (d is String) {
         if (d.isEmpty) return null;
         // Try standard ISO first
@@ -42,7 +55,7 @@ class DailySpecialistAssignment {
         // Handle M/D/YYYY or D/M/YYYY (common in sheets)
         try {
           final parts = d.split(RegExp(r'[/-]'));
-          if (parts.length == 3) {
+          if (parts.length >= 3) {
             int first = int.parse(parts[0]);
             int second = int.parse(parts[1]);
             int third = int.parse(parts[2]);
@@ -61,7 +74,9 @@ class DailySpecialistAssignment {
               return DateTime(third, month, day);
             }
           }
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('Failed to parse complex date string: $d - Error: $e');
+        }
       }
       return null;
     }

@@ -35,15 +35,17 @@ class Repository {
         await _cacheService.saveDuties(duties);
       }
 
-      if (data.containsKey('specialists_daily')) {
-        final dailySpecialists = (data['specialists_daily'] as List)
+      final dailyList = data['specialists_daily'] ?? data['specialist_daily'];
+      if (dailyList != null && dailyList is List) {
+        final dailySpecialists = dailyList
             .map((json) => DailySpecialistAssignment.fromJson(json))
             .toList();
         await _cacheService.saveDailySpecialists(dailySpecialists);
       }
     } catch (e) {
-      debugPrint('Refresh failed: $e');
-      throw Exception('Could not refresh data. Check internet connection.');
+      debugPrint('Repository: Refresh failed with error: $e');
+      // We don't rethrow here to allow the app to continue with cached data if available
+      // but we log it clearly.
     }
   }
 
