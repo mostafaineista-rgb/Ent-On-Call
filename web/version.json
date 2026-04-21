@@ -1,6 +1,6 @@
 {
-  "latest_version": "1.2.0",
-  "build_number": 6,
-  "download_url": "https://github.com/mostafaineista-rgb/Ent-On-Call/releases/download/v1.2.0/app-release.apk",
-  "release_notes": "ENT-ON-CALL 1.2.0+6: Major performance boost with instant startup and background syncing. New premium Lottie animations for a smoother experience."
+  "latest_version": "1.2.1",
+  "build_number": 7,
+  "download_url": "https://github.com/mostafaineista-rgb/Ent-On-Call/releases/download/v1.2.1/app-release.apk",
+  "release_notes": "ENT-ON-CALL 1.2.1+7: Performance & Responsiveness Update. Implemented Local-First architecture, Riverpod state management, and background isolate processing for a lightning-fast user experience."
 }
