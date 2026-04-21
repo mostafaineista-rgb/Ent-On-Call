@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../services/repository.dart';
@@ -52,11 +53,18 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       String errorMsg = e.toString().replaceAll('Exception: ', '');
-      if (errorMsg.contains('Network error')) {
+      if (errorMsg.contains('Network error') || errorMsg.contains('فشل في إرسال البيانات')) {
         errorMsg = 'فشل الاتصال بالخادم. يرجى التأكد من الإنترنت.';
+        if (kIsWeb) {
+          errorMsg += '\n(ملاحظة: قد تكون هناك قيود في المتصفح تمنع الاتصال)';
+        }
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMsg)),
+        SnackBar(
+          content: Text(errorMsg),
+          duration: const Duration(seconds: 5),
+          action: SnackBarAction(label: 'إغلاق', onPressed: () {}),
+        ),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);

@@ -77,10 +77,15 @@ class DutyCard extends StatelessWidget {
     for (final id in duty.residentIds) {
       final res = allResidents.where((r) => r.id == id).firstOrNull;
       if (res != null) {
-        if (res.stage == 5) stage5 = res;
-        else if (res.stage == 4) stage4 = res;
-        else if (res.stage == 3) stage3 = res;
-        else if (res.stage == 2) stage2 = res;
+        if (res.stage == 5) {
+          stage5 = res;
+        } else if (res.stage == 4) {
+          stage4 = res;
+        } else if (res.stage == 3) {
+          stage3 = res;
+        } else if (res.stage == 2) {
+          stage2 = res;
+        }
       }
     }
 

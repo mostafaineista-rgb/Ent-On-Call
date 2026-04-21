@@ -1,4 +1,3 @@
-import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart';
 
 class DailySpecialistAssignment {

@@ -1,61 +1,88 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/repository.dart';
 import '../services/auth_service.dart';
+import '../services/service_locator.dart';
 import 'login_screen.dart';
 import 'main_tab_screen.dart';
+import 'package:lottie/lottie.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
     _bootstrapApp();
   }
 
+  bool _showRetryButton = false;
+
   Future<void> _bootstrapApp() async {
     debugPrint('--- SPLASH BOOTSTRAP START ---');
-    final repository = Repository();
+    final repository = getIt<Repository>();
+    final authService = getIt<AuthService>();
 
     try {
-      debugPrint('Getting Logged In User from cache...');
-      final authService = AuthService(repository);
+      // 1. Check if we have cached data (residents)
+      final residents = await repository.getResidents();
       final user = await authService.getLoggedInUser();
-      debugPrint('User found: ${user?.name ?? "Guest"}');
 
-      if (!mounted) {
-        debugPrint('Splash Screen not mounted, aborting navigation.');
+      if (residents.isNotEmpty) {
+        debugPrint('Cache found! Navigating immediately...');
+        _navigateToNext(user != null);
+        
+        // Trigger background sync after navigation (non-blocking)
+        repository.refreshData().then((_) {
+          debugPrint('Background sync after launch complete.');
+        });
         return;
       }
 
-      if (user != null) {
-        debugPrint('Navigating to MainTabScreen...');
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const MainTabScreen()),
-        );
-      } else {
-        debugPrint('Navigating to LoginScreen...');
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-        );
+      // 2. If NO cache, we must wait for first sync
+      debugPrint('No cache found. Syncing data from server (blocking)...');
+      await repository.refreshData().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('Initial sync timed out.');
+        },
+      );
+
+      final freshResidents = await repository.getResidents();
+      if (freshResidents.isEmpty) {
+        debugPrint('Still no data after sync. Showing retry.');
+        if (mounted) setState(() => _showRetryButton = true);
+        return;
       }
+
+      final freshUser = await authService.getLoggedInUser();
+      _navigateToNext(freshUser != null);
+
     } catch (e, stack) {
       debugPrint('FATAL ERROR during bootstrap: $e');
       debugPrint(stack.toString());
+      if (mounted) setState(() => _showRetryButton = true);
     } finally {
       debugPrint('--- SPLASH BOOTSTRAP END ---');
     }
   }
 
+  void _navigateToNext(bool isLoggedIn) {
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => isLoggedIn ? const MainTabScreen() : const LoginScreen(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    debugPrint('Building SplashScreen...');
     return Scaffold(
       backgroundColor: Colors.white,
       body: Container(
@@ -94,13 +121,37 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'جاري التحميل...',
+                _showRetryButton ? 'يبدو أن هناك تأخيراً في الاتصال' : 'جاري التحميل...',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.blue.shade400,
+                  color: _showRetryButton ? Colors.orange.shade700 : Colors.blue.shade400,
                   fontWeight: FontWeight.w500,
                 ),
               ),
+              if (_showRetryButton) ...[
+                const SizedBox(height: 32),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() => _showRetryButton = false);
+                    _bootstrapApp();
+                  },
+                  icon: const Icon(Icons.refresh_rounded),
+                  label: const Text('إعادة المحاولة الآن'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Text(
+                    'تلميح: تأكد من اتصال الإنترنت وحاول مرة أخرى.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

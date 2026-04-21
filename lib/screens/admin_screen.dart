@@ -74,7 +74,7 @@ class _AdminScreenState extends State<AdminScreen> {
           ],
           bottom: TabBar(
             labelColor: Colors.white,
-            unselectedLabelColor: Colors.white.withOpacity(0.6),
+            unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
             indicatorColor: Colors.white,
             indicatorWeight: 3,
             labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
@@ -213,11 +213,10 @@ class _ResidentManagementTabState extends State<_ResidentManagementTab> {
                         await _repository.updateResident(updatedResident);
                       }
                       
-                      if (mounted) {
-                        Navigator.pop(context);
-                        _loadData();
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم الحفظ بنجاح')));
-                      }
+                      if (!mounted) return;
+                      Navigator.pop(context);
+                      _loadData();
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم الحفظ بنجاح')));
                     } catch (e) {
                       setDialogState(() => isSaving = false);
                       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
@@ -482,7 +481,7 @@ class _DutyManagementTabState extends State<_DutyManagementTab> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
-                        value: selectedSpecialistId,
+                        initialValue: selectedSpecialistId,
                         decoration: const InputDecoration(
                           labelText: 'الأخصائي الخفر',
                           border: OutlineInputBorder(),
@@ -696,7 +695,7 @@ class _DutyManagementTabState extends State<_DutyManagementTab> {
                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                  leading: CircleAvatar(
                    radius: 24,
-                   backgroundColor: primaryColor.withOpacity(0.05),
+                   backgroundColor: primaryColor.withValues(alpha: 0.05),
                    child: Icon(Icons.calendar_month_rounded, color: primaryColor, size: 24),
                  ),
                  title: Text(

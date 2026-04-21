@@ -45,18 +45,19 @@ class DutyDateUtils {
 
   /// Parses YYYY-MM-DD to a more readable Arabic format (e.g. Day, dd/MM/yyyy)
   static String formatArabicReadableDate(String dateString) {
+    if (dateString.isEmpty) return 'تاريخ غير معروف';
     try {
       final dateTime = DateTime.parse(dateString);
-      return DateFormat('EEEE، d/M/yyyy', 'ar').format(dateTime);
-    } catch (e) {
-      // Fallback for non-iso dates or parse errors
+      // Try fancy Arabic format first
       try {
-        final parts = dateString.split('-');
-        if (parts.length == 3) {
-          return '${parts[2]}/${parts[1]}/${parts[0]}';
-        }
-      } catch (_) {}
+        return DateFormat('EEEE، d/M/yyyy', 'ar').format(dateTime);
+      } catch (intlError) {
+        // Fallback to simple format if intl fails on Web
+        return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+      }
+    } catch (e) {
+      // Fallback for non-iso dates
+      return dateString;
     }
-    return dateString;
   }
 }

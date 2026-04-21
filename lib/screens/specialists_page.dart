@@ -67,16 +67,22 @@ class _SpecialistsPageState extends State<SpecialistsPage> {
     final todayAssignment = _allAssignments.where((a) => a.date == todayDateStr).firstOrNull;
     
     final upcomingAssignments = _allAssignments.where((a) {
+      if (a.date == todayDateStr) return true;
       try {
         final aDate = DateTime.parse(a.date);
         final tDate = DateTime.parse(todayDateStr);
-        return aDate.isAfter(tDate);
+        // Show today and future dates
+        return aDate.isAfter(tDate) || a.date == todayDateStr;
       } catch (_) {
-        return false;
+        // If parsing fails, still show it just in case
+        return true;
       }
     }).toList();
     
+    // Sort and remove duplicates (if any)
     upcomingAssignments.sort((a, b) => a.date.compareTo(b.date));
+    final seenDates = <String>{};
+    upcomingAssignments.retainWhere((a) => seenDates.add(a.date));
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),

@@ -1,115 +1,97 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/duty.dart';
 import '../models/resident.dart';
 import '../models/specialist.dart';
+import '../services/providers.dart';
 import '../services/auth_service.dart';
-import '../services/repository.dart';
+import '../services/service_locator.dart';
 import '../widgets/duty_card.dart';
-import '../models/daily_specialist.dart';
 
-class MyDutiesScreen extends StatefulWidget {
+class MyDutiesScreen extends ConsumerWidget {
   const MyDutiesScreen({super.key});
 
   @override
-  State<MyDutiesScreen> createState() => _MyDutiesScreenState();
-}
-
-class _MyDutiesScreenState extends State<MyDutiesScreen> {
-  final Repository _repository = Repository();
-  late final AuthService _authService = AuthService(_repository);
-  List<Duty> _myDuties = [];
-  List<Resident> _allResidents = [];
-  List<Specialist> _allSpecialists = [];
-  List<DailySpecialistAssignment> _allSpecialistAssignments = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  Future<void> _loadData() async {
-    setState(() => _isLoading = true);
-    try {
-      final user = await _authService.getLoggedInUser();
-      if (user == null) return;
-
-      final duties = await _repository.getDuties();
-      final residents = await _repository.getResidents();
-      final specialists = await _repository.getSpecialists();
-      final specialistAssignments = await _repository.getDailySpecialists();
-
-      setState(() {
-        _allResidents = residents;
-        _allSpecialists = specialists;
-        _allSpecialistAssignments = specialistAssignments;
-        _myDuties = duties.where((d) => d.residentIds.contains(user.id)).toList();
-        _myDuties.sort((a, b) => a.date.compareTo(b.date));
-      });
-    } catch (e) {
-      debugPrint('Error loading my duties: $e');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dutiesAsync = ref.watch(dutiesProvider);
+    final residentsAsync = ref.watch(residentsProvider);
+    final specialistsAsync = ref.watch(specialistsProvider);
+    final assignmentsAsync = ref.watch(dailySpecialistsProvider);
+    final authService = getIt<AuthService>();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('خفاراتي', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-        elevation: 0,
+        title: const Text('خفاراتي'),
+        centerTitle: true,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _myDuties.isEmpty
-              ? _buildEmptyState()
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  itemCount: _myDuties.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: DutyCard(
-                        duty: _myDuties[index],
-                        allResidents: _allResidents,
-                        allSpecialists: _allSpecialists,
-                        specialistAssignment: _allSpecialistAssignments.where((a) => a.date == _myDuties[index].date).firstOrNull,
-                      ),
-                    );
-                  },
-                ),
+      body: dutiesAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
+        data: (duties) {
+          return FutureBuilder<Resident?>(
+            future: authService.getLoggedInUser(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              
+              final user = snapshot.data;
+              if (user == null) {
+                return const Center(child: Text('يرجى تسجيل الدخول لعرض خفاراتك'));
+              }
+
+              final myDuties = duties.where((d) => 
+                d.residentIds.contains(user.id)
+              ).toList();
+
+              myDuties.sort((a, b) => b.date.compareTo(a.date));
+
+              if (myDuties.isEmpty) {
+                return _buildEmptyState(ref);
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                itemCount: myDuties.length,
+                itemBuilder: (context, index) {
+                  final duty = myDuties[index];
+                  final residents = residentsAsync.value ?? [];
+                  final specialists = specialistsAsync.value ?? [];
+                  final assignments = assignmentsAsync.value ?? [];
+                  final assignment = assignments.where((a) => a.date == duty.date).firstOrNull;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: DutyCard(
+                      duty: duty,
+                      allResidents: residents,
+                      allSpecialists: specialists,
+                      specialistAssignment: assignment,
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(WidgetRef ref) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(Icons.person_pin_circle_outlined, size: 64, color: Colors.blue.shade200),
-          ),
+          Icon(Icons.assignment_ind_outlined, size: 64, color: Colors.grey.shade300),
+          const SizedBox(height: 16),
+          const Text('لا توجد خفارات مسجلة باسمك', style: TextStyle(color: Colors.grey, fontSize: 16)),
           const SizedBox(height: 24),
-          const Text(
-            'لا توجد خفارات مسجلة لك',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black54),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'سيظهر جدول خفاراتك الخاصة هنا',
-            style: TextStyle(fontSize: 14, color: Colors.grey),
+          ElevatedButton.icon(
+            onPressed: () => ref.read(dutiesProvider.notifier).loadDuties(),
+            icon: const Icon(Icons.refresh),
+            label: const Text('تحديث'),
           ),
         ],
       ),

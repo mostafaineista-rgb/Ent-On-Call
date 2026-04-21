@@ -5,47 +5,37 @@ import '../models/specialist.dart';
 import '../models/daily_specialist.dart';
 import 'api_service.dart';
 import 'cache_service.dart';
+import 'service_locator.dart';
 
 class Repository {
-  final ApiService _apiService = ApiService();
-  final CacheService _cacheService = CacheService();
+  final ApiService _apiService = getIt<ApiService>();
+  final CacheService _cacheService = getIt<CacheService>();
 
   Future<void> refreshData() async {
     try {
       final data = await _apiService.fetchData();
+      debugPrint('Repository: Received data keys: ${data.keys.toList()}');
       
-      if (data.containsKey('residents')) {
-        final residents = (data['residents'] as List)
-            .map((json) => Resident.fromJson(json))
-            .toList();
-        await _cacheService.saveResidents(residents);
-      }
+      // Use compute to parse in background isolate
+      final parsedData = await compute(_parseBootstrapData, data);
 
-      if (data.containsKey('specialists')) {
-        final specialists = (data['specialists'] as List)
-            .map((json) => Specialist.fromJson(json))
-            .toList();
-        await _cacheService.saveSpecialists(specialists);
+      if (parsedData.residents != null) {
+        await _cacheService.saveResidents(parsedData.residents!);
       }
-
-      if (data.containsKey('duties')) {
-        final duties = (data['duties'] as List)
-            .map((json) => Duty.fromJson(json))
-            .toList();
-        await _cacheService.saveDuties(duties);
+      
+      if (parsedData.specialists != null) {
+        await _cacheService.saveSpecialists(parsedData.specialists!);
       }
-
-      final dailyList = data['specialists_daily'] ?? data['specialist_daily'];
-      if (dailyList != null && dailyList is List) {
-        final dailySpecialists = dailyList
-            .map((json) => DailySpecialistAssignment.fromJson(json))
-            .toList();
-        await _cacheService.saveDailySpecialists(dailySpecialists);
+      
+      if (parsedData.duties != null) {
+        await _cacheService.saveDuties(parsedData.duties!);
+      }
+      
+      if (parsedData.dailyAssignments != null) {
+        await _cacheService.saveDailySpecialists(parsedData.dailyAssignments!);
       }
     } catch (e) {
       debugPrint('Repository: Refresh failed with error: $e');
-      // We don't rethrow here to allow the app to continue with cached data if available
-      // but we log it clearly.
     }
   }
 
@@ -77,15 +67,7 @@ class Repository {
   }
 
   Future<void> updateResident(Resident resident) async {
-    if (kIsWeb) {
-      await _apiService.updateResidentWeb(
-        id: resident.id,
-        phone: resident.phoneNumber,
-      );
-    } else {
-      await _apiService.postAction('updateResident', resident.toJson());
-    }
-    // Give Google Apps Script some time to process and update the spreadsheet before we fetch again
+    await _apiService.postAction('updateResident', resident.toJson());
     await Future.delayed(const Duration(seconds: 3));
     await refreshData();
   }
@@ -151,4 +133,65 @@ class Repository {
     });
     await refreshData();
   }
+}
+
+// Helper class for parsed data
+class _ParsedBootstrapData {
+  final List<Resident>? residents;
+  final List<Specialist>? specialists;
+  final List<Duty>? duties;
+  final List<DailySpecialistAssignment>? dailyAssignments;
+
+  _ParsedBootstrapData({
+    this.residents,
+    this.specialists,
+    this.duties,
+    this.dailyAssignments,
+  });
+}
+
+// Top-level function for compute
+_ParsedBootstrapData _parseBootstrapData(Map<String, dynamic> data) {
+  T? findData<T>(List<String> possibleKeys) {
+    for (var key in possibleKeys) {
+      if (data.containsKey(key) && data[key] is T) return data[key] as T;
+      final match = data.keys.firstWhere(
+        (k) => k.toLowerCase() == key.toLowerCase(),
+        orElse: () => '',
+      );
+      if (match.isNotEmpty && data[match] is T) return data[match] as T;
+    }
+    return null;
+  }
+
+  List<Resident>? residents;
+  final residentsList = findData<List<dynamic>>(['residents', 'Residents']);
+  if (residentsList != null) {
+    residents = residentsList.map((json) => Resident.fromJson(json)).toList();
+  }
+
+  List<Specialist>? specialists;
+  final specialistsList = findData<List<dynamic>>(['specialists', 'Specialists']);
+  if (specialistsList != null) {
+    specialists = specialistsList.map((json) => Specialist.fromJson(json)).toList();
+  }
+
+  List<Duty>? duties;
+  final dutiesList = findData<List<dynamic>>(['duties', 'Duties', 'schedule', 'Duty']);
+  if (dutiesList != null) {
+    duties = dutiesList.map((json) => Duty.fromJson(json)).toList();
+  }
+
+  List<DailySpecialistAssignment>? dailyAssignments;
+  final dailyList = findData<List<dynamic>>(['specialists_daily', 'specialist_daily', 'daily_specialists']);
+  if (dailyList != null) {
+    dailyAssignments = dailyList.map((json) => DailySpecialistAssignment.fromJson(json)).toList();
+  }
+
+  return _ParsedBootstrapData(
+    residents: residents,
+    specialists: specialists,
+    duties: duties,
+    dailyAssignments: dailyAssignments,
+  );
 }

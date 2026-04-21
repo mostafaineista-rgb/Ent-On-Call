@@ -257,7 +257,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -357,7 +357,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         foregroundColor: Colors.red.shade700,
                         side: BorderSide(color: Colors.red.shade200),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        backgroundColor: Colors.red.shade50.withOpacity(0.5),
+                        backgroundColor: Colors.red.shade50.withValues(alpha: 0.5),
                       ),
                     ),
                   ),

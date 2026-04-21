@@ -13,26 +13,28 @@ class ApiService {
 
   Future<Map<String, dynamic>> fetchData() async {
     try {
-      debugPrint('ApiService: Fetching bootstrap data...');
+      debugPrint('ApiService: Fetching bootstrap data from $apiUrl');
       
       if (kIsWeb) {
-        // On Web, redirects are automatic. Simple GET first.
+        debugPrint('ApiService: Running on web, checking for CORS/Redirect issues...');
         try {
           final response = await http.get(Uri.parse('$apiUrl?action=bootstrap'));
-          if (response.statusCode == 200) {
-            return jsonDecode(response.body);
-          }
           debugPrint('ApiService Web GET status: ${response.statusCode}');
+          if (response.statusCode == 200) {
+            final body = response.body;
+            debugPrint('ApiService: Received body preview: ${body.length > 100 ? body.substring(0, 100) : body}');
+            return jsonDecode(body);
+          }
         } catch (e) {
-          debugPrint('ApiService Web GET failed: $e. Trying POST fallback...');
+          debugPrint('ApiService Web GET failed (possibly CORS): $e. Trying POST fallback...');
           // Fallback to POST which sometimes handles Apps Script CORS better on Web
           final postResponse = await http.post(
             Uri.parse(apiUrl),
             body: {'action': 'bootstrap'},
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
           );
+          debugPrint('ApiService Web POST status: ${postResponse.statusCode}');
           if (postResponse.statusCode == 200 || postResponse.statusCode == 302) {
-             // If we get a 302 on POST, it's rare on web but we handle the body if it returned data
              return jsonDecode(postResponse.body);
           }
         }
@@ -40,10 +42,12 @@ class ApiService {
 
       // Default / Native path
       final response = await http.get(Uri.parse('$apiUrl?action=bootstrap'));
+      debugPrint('ApiService: Native GET status: ${response.statusCode}');
       
       // Handle Apps Script manual redirects for Native
       if (response.statusCode == 302 || response.statusCode == 301) {
         final newUrl = response.headers['location'];
+        debugPrint('ApiService: Redirecting to $newUrl');
         if (newUrl != null) {
           final redirectedResponse = await http.get(Uri.parse(newUrl));
           if (redirectedResponse.statusCode == 200) {
@@ -59,7 +63,8 @@ class ApiService {
       }
     } catch (e) {
       debugPrint('ApiService Error: $e');
-      throw Exception('Network error: $e');
+      // On some networks, Apps Script might return a 403 or 401 if not shared correctly
+      throw Exception('Network error or access denied. Please check connectivity.');
     }
   }
 
@@ -118,70 +123,51 @@ class ApiService {
     return assignments;
   }
 
-  /// Specialized updateResident to handle Web CORS issues
-  Future<Map<String, dynamic>> updateResidentWeb({
-    required String id,
-    required String phone,
-    String? secret,
-  }) async {
-    final Map<String, String> body = {
-      'action': 'updateResident',
-      'secret': secret ?? appsScriptSecret,
-      'id': id,
-      'phone': phone,
-    };
-
-    debugPrint('--- API WEB UPDATE RESIDENT ---');
-    debugPrint('Parameters: $body');
-
-    try {
-      // Use simple form POST (application/x-www-form-urlencoded) to avoid CORS preflight
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        body: body,
-      );
-
-      debugPrint('Web Response Status: ${response.statusCode}');
-
-      // Handle Apps Script redirects (usually 302/303)
-      if (response.statusCode == 302 || response.statusCode == 303) {
-        final newUrl = response.headers['location'];
-        if (newUrl != null) {
-          final redirectedResponse = await http.get(Uri.parse(newUrl));
-          if (redirectedResponse.statusCode == 200) {
-            return jsonDecode(redirectedResponse.body);
-          }
-        }
-        return {'ok': true, 'message': 'Update sent (redirected)'};
-      }
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Server error during update: ${response.statusCode}');
-      }
-    } catch (e) {
-      debugPrint('Web Update Error: $e');
-      throw Exception('Network error during web update: $e');
-    } finally {
-      debugPrint('--- END API WEB UPDATE RESIDENT ---');
-    }
-  }
-
   Future<Map<String, dynamic>> postAction(String action, Map<String, dynamic> data) async {
-    // If it's a web update for a resident, we could redirect here, 
-    // but better to use the specialized method for clarity as requested.
-    
-    final payload = jsonEncode({
-      'action': action,
-      ...data,
-    });
-    
     debugPrint('--- API POST REQUEST ---');
     debugPrint('Action: $action');
-    debugPrint('Payload: $payload');
-
+    
     try {
+      if (kIsWeb) {
+        // Use application/x-www-form-urlencoded to avoid CORS preflight (OPTIONS)
+        final Map<String, String> body = {
+          'action': action,
+          'secret': appsScriptSecret,
+          ...data.map((key, value) => MapEntry(key, value.toString())),
+        };
+        
+        final response = await http.post(
+          Uri.parse(apiUrl),
+          body: body,
+        );
+
+        debugPrint('Web POST Status: ${response.statusCode}');
+
+        if (response.statusCode == 302 || response.statusCode == 303) {
+          final newUrl = response.headers['location'];
+          if (newUrl != null) {
+            final redirectedResponse = await http.get(Uri.parse(newUrl));
+            if (redirectedResponse.statusCode == 200) {
+              return jsonDecode(redirectedResponse.body);
+            }
+          }
+          return {'status': 'success', 'message': 'Action sent (redirected)'};
+        }
+
+        if (response.statusCode == 200) {
+          return jsonDecode(response.body);
+        } else {
+          throw Exception('Server error: ${response.statusCode}');
+        }
+      }
+
+      // Default / Native path (JSON)
+      final payload = jsonEncode({
+        'action': action,
+        'secret': appsScriptSecret, // Ensure secret is always included
+        ...data,
+      });
+      
       final response = await http.post(
         Uri.parse(apiUrl),
         body: payload,
@@ -192,16 +178,10 @@ class ApiService {
 
       debugPrint('Initial Response Status: ${response.statusCode}');
 
-      // Google Apps Script 302/303 redirects from POST must be followed with a GET
       if (response.statusCode == 302 || response.statusCode == 303) {
         final newUrl = response.headers['location'];
-        debugPrint('Redirect Location: $newUrl');
-        
         if (newUrl != null) {
           final redirectedResponse = await http.get(Uri.parse(newUrl));
-          debugPrint('Redirected Response Status: ${redirectedResponse.statusCode}');
-          debugPrint('Redirected Body: ${redirectedResponse.body}');
-          
           if (redirectedResponse.statusCode == 200) {
             return jsonDecode(redirectedResponse.body);
           }
@@ -210,14 +190,13 @@ class ApiService {
       }
 
       if (response.statusCode == 200) {
-        debugPrint('Response Body: ${response.body}');
         return jsonDecode(response.body);
       } else {
         throw Exception('Server error: ${response.statusCode}');
       }
     } catch (e) {
       debugPrint('API Post Error: $e');
-      throw Exception('Network error during $action: $e');
+      throw Exception('فشل في إرسال البيانات. يرجى التأكد من الإنترنت.');
     } finally {
       debugPrint('--- END API POST REQUEST ---');
     }

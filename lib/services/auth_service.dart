@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/resident.dart';
 import 'repository.dart';
@@ -22,7 +23,15 @@ class AuthService {
   }
 
   Future<Resident?> login(String name, String password) async {
-    final residents = await _repository.getResidents();
+    List<Resident> residents = await _repository.getResidents();
+    
+    // If cache is empty, force a refresh once
+    if (residents.isEmpty) {
+      debugPrint('AuthService: Resident list empty, forcing refresh...');
+      await _repository.refreshData();
+      residents = await _repository.getResidents();
+    }
+
     try {
       final resident = residents.firstWhere((r) => r.name.trim() == name.trim());
       
@@ -33,11 +42,25 @@ class AuthService {
         await prefs.setString(_loggedInUserIdKey, resident.id);
         return resident;
       } else {
-        throw Exception('Invalid password');
+        throw Exception('كلمة المرور غير صحيحة'); // Arabic error for incorrect password
       }
     } catch (e) {
       if (e is StateError) {
-        throw Exception('Resident name not found');
+        // Try one last time if they just registered or something changed
+        await _repository.refreshData();
+        residents = await _repository.getResidents();
+        try {
+          final resident = residents.firstWhere((r) => r.name.trim() == name.trim());
+          if (resident.password.isEmpty || resident.password.trim() == password.trim()) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString(_loggedInUserIdKey, resident.id);
+            return resident;
+          } else {
+             throw Exception('كلمة المرور غير صحيحة');
+          }
+        } catch (_) {
+          throw Exception('اسم المقيم غير موجود. يرجى التأكد من الاسم.');
+        }
       }
       rethrow;
     }

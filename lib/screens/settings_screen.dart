@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../services/repository.dart';
+import '../utils/date_utils.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -30,7 +32,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
     final isAndroid = !kIsWeb && Theme.of(context).platform == TargetPlatform.android;
 
     return Scaffold(
@@ -47,6 +48,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             '$_version ($_buildNumber)',
             Icons.info_outline_rounded,
           ),
+          const SizedBox(height: 20),
+          const SizedBox(height: 20),
+          _buildSectionTitle('تشخيص البيئة'),
+          _buildInfoCard(
+            'نوع المنصة',
+            kIsWeb ? 'متصفح ويب (Chrome)' : 'تطبيق أصلي',
+            Icons.phonelink_setup_rounded,
+          ),
+          const SizedBox(height: 12),
+          _buildDataDiagnosticCard(),
           const SizedBox(height: 20),
           if (isAndroid) ...[
             _buildSectionTitle('التحديثات'),
@@ -70,6 +81,70 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDataDiagnosticCard() {
+    final repository = Repository();
+    
+    return FutureBuilder(
+      future: Future.wait([
+        repository.getResidents(),
+        repository.getSpecialists(),
+        repository.getDuties(),
+        repository.getDailySpecialists(),
+      ]),
+      builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+        if (!snapshot.hasData) {
+          return _buildInfoCard('جاري التحميل...', '...', Icons.hourglass_empty_rounded);
+        }
+        
+        final residentsCount = (snapshot.data![0] as List).length;
+        final specialistsCount = (snapshot.data![1] as List).length;
+        final dutiesCount = (snapshot.data![2] as List).length;
+        final dailyCount = (snapshot.data![3] as List).length;
+        
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.storage_rounded, color: Colors.blue.shade700),
+                  const SizedBox(width: 16),
+                  const Text('إحصائيات البيانات المخزنة', style: TextStyle(fontWeight: FontWeight.bold)),
+                ],
+              ),
+              const Divider(height: 24),
+              _buildStatRow('المقيمين', residentsCount.toString()),
+              _buildStatRow('الاختصاصيين', specialistsCount.toString()),
+              _buildStatRow('الخفارات الكلي', dutiesCount.toString()),
+              _buildStatRow('جداول العمليات', dailyCount.toString()),
+              const Divider(height: 24),
+              _buildStatRow('تاريخ اليوم (Baghdad)', DutyDateUtils.getCurrentDutyDate()),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStatRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
         ],
       ),
     );

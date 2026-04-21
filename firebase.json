@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "predeploy": "powershell -ExecutionPolicy Bypass -File .\\verify_app_identity.ps1 ent_on_call ent-on-call",
     "public": "build/web",
     "ignore": [
       "firebase.json",
@@ -10,6 +11,17 @@
       {
         "source": "**",
         "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
       }
     ]
   }

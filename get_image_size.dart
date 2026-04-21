@@ -21,7 +21,7 @@ void main(List<String> args) {
     final data = ByteData.sublistView(bytes, 16, 24);
     final width = data.getUint32(0);
     final height = data.getUint32(4);
-    print('Size: ${width}x${height}');
+    print('Size: ${width}x$height');
     return;
   }
 
@@ -35,7 +35,7 @@ void main(List<String> args) {
         if (marker == 0xC0 || marker == 0xC2) { // SOF0 or SOF2
           final height = (bytes[offset + 5] << 8) + bytes[offset + 6];
           final width = (bytes[offset + 7] << 8) + bytes[offset + 8];
-          print('Size: ${width}x${height}');
+          print('Size: ${width}x$height');
           return;
         }
         offset += 2 + (bytes[offset + 2] << 8) + bytes[offset + 3];
