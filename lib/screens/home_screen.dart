@@ -416,10 +416,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           
           if (todayAssignment != null && todayAssignment.specialistOnCallNames.isNotEmpty)
             ...todayAssignment.specialistOnCallNames.map((name) => 
-              _buildRoleRow('الأخصائي الخفر', name, Icons.medical_services_rounded, Colors.red.shade700)
+              _buildRoleRow('الاختصاصي الخفر', name, Icons.medical_services_rounded, Colors.red.shade700)
             )
           else
-            _buildRoleRow('الأخصائي الخفر', specialist?.name ?? 'لا يوجد اختصاص خفر', Icons.medical_services_rounded, Colors.red.shade700),
+            _buildRoleRow('الاختصاصي الخفر', specialist?.name ?? 'لا يوجد اختصاص خفر', Icons.medical_services_rounded, Colors.red.shade700),
           
           const SizedBox(height: 8),
 

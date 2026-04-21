@@ -2,5 +2,5 @@
   "latest_version": "1.2.1",
   "build_number": 7,
   "download_url": "https://github.com/mostafaineista-rgb/Ent-On-Call/releases/download/v1.2.1/app-release.apk",
-  "release_notes": "ENT-ON-CALL 1.2.1+7: Performance & Responsiveness Update. Implemented Local-First architecture, Riverpod state management, and background isolate processing for a lightning-fast user experience."
+  "release_notes": "ENT-ON-CALL 1.2.1+7: Updated schedule view to show the full month, fixed Arabic typos in the title bar and specialist labels across the app for better clarity."
 }

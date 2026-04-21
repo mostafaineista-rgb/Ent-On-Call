@@ -80,7 +80,7 @@ class _AdminScreenState extends State<AdminScreen> {
             labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             tabs: const [
               Tab(icon: Icon(Icons.people_rounded), text: 'المقيمين'),
-              Tab(icon: Icon(Icons.medical_services_rounded), text: 'الأخصائيين'),
+              Tab(icon: Icon(Icons.medical_services_rounded), text: 'الاختصاصيين'),
               Tab(icon: Icon(Icons.calendar_month_rounded), text: 'الجدول'),
             ],
           ),
@@ -483,7 +483,7 @@ class _DutyManagementTabState extends State<_DutyManagementTab> {
                       DropdownButtonFormField<String>(
                         initialValue: selectedSpecialistId,
                         decoration: const InputDecoration(
-                          labelText: 'الأخصائي الخفر',
+                          labelText: 'الاختصاصي الخفر',
                           border: OutlineInputBorder(),
                           contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         ),
@@ -712,7 +712,7 @@ class _DutyManagementTabState extends State<_DutyManagementTab> {
                            Icon(Icons.medical_services_outlined, size: 14, color: Colors.grey.shade600),
                            const SizedBox(width: 4),
                            Text(
-                             'الأخصائي: ${_specialists.firstWhere((s) => s.id == duty.specialistId, orElse: () => Specialist(id: '', name: 'لا يوجد', phone: '', isActive: false)).name}',
+                             'الاختصاصي: ${_specialists.firstWhere((s) => s.id == duty.specialistId, orElse: () => Specialist(id: '', name: 'لا يوجد', phone: '', isActive: false)).name}',
                              style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
                            ),
                          ],
@@ -821,7 +821,7 @@ class _SpecialistManagementTabState extends State<_SpecialistManagementTab> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: Text(specialist == null ? 'إضافة أخصائي جديد' : 'تعديل بيانات الأخصائي'),
+              title: Text(specialist == null ? 'إضافة اختصاصي جديد' : 'تعديل بيانات الاختصاصي'),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

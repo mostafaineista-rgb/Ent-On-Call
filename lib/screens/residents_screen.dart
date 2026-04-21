@@ -77,7 +77,7 @@ class _ResidentsScreenState extends State<ResidentsScreen> {
             labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             tabs: const [
               Tab(text: 'المقيمين', icon: Icon(Icons.people_alt_rounded, size: 20)),
-              Tab(text: 'الأخصائيين', icon: Icon(Icons.medical_services_rounded, size: 20)),
+              Tab(text: 'الاختصاصيين', icon: Icon(Icons.medical_services_rounded, size: 20)),
             ],
           ),
         ),
@@ -144,7 +144,7 @@ class _ResidentsScreenState extends State<ResidentsScreen> {
 
   Widget _buildSpecialistList() {
     if (_specialists.isEmpty) {
-      return _buildEmptyState('لا يوجد أخصائيين حالياً');
+      return _buildEmptyState('لا يوجد اختصاصيين حالياً');
     }
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
@@ -176,7 +176,7 @@ class _ResidentsScreenState extends State<ResidentsScreen> {
                       color: Colors.blue.shade50,
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Text('أخصائي', style: TextStyle(fontSize: 11, color: Colors.blue.shade800, fontWeight: FontWeight.bold)),
+                    child: Text('اختصاصي', style: TextStyle(fontSize: 11, color: Colors.blue.shade800, fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(width: 8),
                   Text(specialist.phone, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),

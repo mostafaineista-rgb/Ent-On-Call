@@ -333,7 +333,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: Icon(Icons.admin_panel_settings_rounded, color: Colors.red.shade800),
                         ),
                         title: const Text('لوحة تحكم المسؤول', style: TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: const Text('إدارة المقيمين، الأخصائيين، والجدول'),
+                        subtitle: const Text('إدارة المقيمين، الاختصاصيين، والجدول'),
                         trailing: const Icon(Icons.chevron_left_rounded),
                         onTap: () {
                           Navigator.push(
@@ -364,7 +364,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 20),
                   const Center(
                     child: Text(
-                      'v1.2.0 • ENT On-Call',
+                      'v1.2.1 • ENT On-Call',
                       style: TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                   ),

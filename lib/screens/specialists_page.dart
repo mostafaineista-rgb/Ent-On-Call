@@ -108,7 +108,7 @@ class _SpecialistsPageState extends State<SpecialistsPage> {
                       children: [
                         ...todayAssignment.specialistOnCallNames.map((name) => 
                           _buildRoleCard(
-                            'الاخصائي الخفر',
+                            'الاختصاصي الخفر',
                             name,
                             _getSpecialistPhone(todayAssignment.specialistOnCallId, todayAssignment.specialistOnCallPhone),
                             Colors.red.shade700,

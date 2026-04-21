@@ -20,7 +20,7 @@ class UpcomingDutiesScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('جدol الخفارات'),
+        title: const Text('جدول الخفارات'),
         centerTitle: true,
       ),
       body: dutiesAsync.when(

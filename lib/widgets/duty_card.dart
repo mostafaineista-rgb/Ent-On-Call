@@ -174,7 +174,7 @@ class DutyCard extends StatelessWidget {
             
             // Specialist row
             _buildRoleRow(
-              'الأخصائي الخفر', 
+              'الاختصاصي الخفر', 
               specialist?.name ?? 'لا يوجد اختصاص خفر', 
               Icons.medical_services, 
               Colors.red.shade700
