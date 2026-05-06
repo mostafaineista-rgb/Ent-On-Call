@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/duty.dart';
 import '../models/resident.dart';
 import '../models/specialist.dart';
 import '../services/providers.dart';
 import '../services/auth_service.dart';
 import '../services/service_locator.dart';
 import '../widgets/duty_card.dart';
+import '../utils/date_utils.dart';
 
 class MyDutiesScreen extends ConsumerWidget {
   const MyDutiesScreen({super.key});
@@ -29,7 +29,7 @@ class MyDutiesScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Error: $err')),
         data: (duties) {
-          return FutureBuilder<Resident?>(
+          return FutureBuilder<dynamic>(
             future: authService.getLoggedInUser(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -41,11 +41,53 @@ class MyDutiesScreen extends ConsumerWidget {
                 return const Center(child: Text('يرجى تسجيل الدخول لعرض خفاراتك'));
               }
 
-              final myDuties = duties.where((d) => 
-                d.residentIds.contains(user.id)
-              ).toList();
+              final isResident = user is Resident;
+              final isSpecialist = user is Specialist;
 
-              myDuties.sort((a, b) => b.date.compareTo(a.date));
+              if (!isResident && !isSpecialist) {
+                return const Center(child: Text('خفارات الاختصاصيين تظهر في الجدول الرئيسي', style: TextStyle(fontSize: 16, color: Colors.grey)));
+              }
+
+              final now = DutyDateUtils.getCurrentDutyDateTime();
+              final today = DateTime(now.year, now.month, now.day);
+              final assignments = assignmentsAsync.value ?? [];
+              
+              final myDuties = duties.where((d) {
+                bool isMyDuty = false;
+                if (isResident) {
+                  isMyDuty = d.residentIds.contains(user.id);
+                } else if (isSpecialist) {
+                  // Check direct duty assignment
+                  if (d.specialistId == user.id) {
+                    isMyDuty = true;
+                  } else {
+                    // Check daily specialist assignments for the same date
+                    final assignment = assignments.where((a) => a.date == d.date).firstOrNull;
+                    if (assignment != null) {
+                      if (assignment.specialistOnCallIds.contains(user.id) ||
+                          assignment.orSpecialistIds.contains(user.id) ||
+                          assignment.consultationSpecialistIds.contains(user.id)) {
+                        isMyDuty = true;
+                      }
+                    }
+                  }
+                }
+
+                if (!isMyDuty) return false;
+                
+                final dutyDate = DutyDateUtils.parseDate(d.date);
+                if (dutyDate == null) return false;
+
+                final normalizedDutyDate = DateTime(dutyDate.year, dutyDate.month, dutyDate.day);
+                return !normalizedDutyDate.isBefore(today);
+              }).toList();
+
+              // Sort ascending (closest duties first)
+              myDuties.sort((a, b) {
+                final dateA = DutyDateUtils.parseDate(a.date) ?? DateTime(9999);
+                final dateB = DutyDateUtils.parseDate(b.date) ?? DateTime(9999);
+                return dateA.compareTo(dateB);
+              });
 
               if (myDuties.isEmpty) {
                 return _buildEmptyState(ref);
@@ -58,7 +100,6 @@ class MyDutiesScreen extends ConsumerWidget {
                   final duty = myDuties[index];
                   final residents = residentsAsync.value ?? [];
                   final specialists = specialistsAsync.value ?? [];
-                  final assignments = assignmentsAsync.value ?? [];
                   final assignment = assignments.where((a) => a.date == duty.date).firstOrNull;
 
                   return Padding(

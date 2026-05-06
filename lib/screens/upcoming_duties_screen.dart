@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/duty.dart';
-import '../models/resident.dart';
-import '../models/specialist.dart';
 import '../services/providers.dart';
 import '../utils/date_utils.dart';
 import '../widgets/duty_card.dart';

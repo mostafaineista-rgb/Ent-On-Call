@@ -60,4 +60,27 @@ class DutyDateUtils {
       return dateString;
     }
   }
+
+  /// Parses a date string in multiple formats (YYYY-MM-DD or DD/MM/YYYY)
+  static DateTime? parseDate(String dateString) {
+    if (dateString.isEmpty) return null;
+    try {
+      // Try YYYY-MM-DD
+      return DateTime.parse(dateString);
+    } catch (_) {
+      // Try DD/MM/YYYY
+      try {
+        final parts = dateString.split('/');
+        if (parts.length == 3) {
+          int day = int.parse(parts[0]);
+          int month = int.parse(parts[1]);
+          int year = int.parse(parts[2]);
+          // Handle 2-digit years if necessary, but 4-digit is expected
+          if (year < 100) year += 2000;
+          return DateTime(year, month, day);
+        }
+      } catch (_) {}
+    }
+    return null;
+  }
 }

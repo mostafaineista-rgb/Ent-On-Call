@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/resident.dart';
+import '../models/specialist.dart';
 import '../services/auth_service.dart';
 import '../services/repository.dart';
 import '../services/cache_service.dart';
@@ -16,7 +17,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final Repository _repository = Repository();
   late final AuthService _authService = AuthService(_repository);
-  Resident? _user;
+  dynamic _user;
   bool _isLoading = true;
 
   @override
@@ -80,7 +81,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _editPhoneNumber() {
-    final controller = TextEditingController(text: _user!.phoneNumber);
+    final controller = TextEditingController(text: _user is Resident ? _user!.phoneNumber : _user!.phone);
     showDialog(
       context: context,
       builder: (context) {
@@ -103,7 +104,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () async {
                 final newPhone = controller.text.trim();
                 if (newPhone.isEmpty) return;
-                await _updateUser(_user!.copyWith(phoneNumber: newPhone));
+                if (_user is Resident) {
+                  await _updateUser(_user!.copyWith(phoneNumber: newPhone));
+                } else {
+                  await _updateUser(_user!.copyWith(phone: newPhone));
+                }
               },
               child: const Text('حفظ'),
             ),
@@ -113,7 +118,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Future<void> _updateUser(Resident updatedUser) async {
+  Future<void> _updateUser(dynamic updatedUser) async {
     // Show loading dialog
     showDialog(
       context: context,
@@ -122,20 +127,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     try {
-      // 1. Update Remote Backend
-      await _repository.updateResident(updatedUser);
+      final cache = CacheService();
+      
+      // 1. Update Remote Backend and local cache
+      if (updatedUser is Resident) {
+        await _repository.updateResident(updatedUser);
+        final residents = await cache.getResidents();
+        final index = residents.indexWhere((r) => r.id == updatedUser.id);
+        if (index != -1) {
+          residents[index] = updatedUser;
+          await cache.saveResidents(residents);
+        }
+      } else if (updatedUser is Specialist) {
+        await _repository.updateSpecialist(updatedUser);
+        final specialists = await cache.getSpecialists();
+        final index = specialists.indexWhere((s) => s.id == updatedUser.id);
+        if (index != -1) {
+          specialists[index] = updatedUser;
+          await cache.saveSpecialists(specialists);
+        }
+      }
 
       // 2. Update local state
       if (mounted) setState(() => _user = updatedUser);
-      
-      // 3. Update Local Cache
-      final cache = CacheService();
-      final residents = await cache.getResidents();
-      final index = residents.indexWhere((r) => r.id == updatedUser.id);
-      if (index != -1) {
-        residents[index] = updatedUser;
-        await cache.saveResidents(residents);
-      }
       
       if (!mounted) return;
       // Pop loading dialog and then pop the original edit dialog
@@ -218,18 +232,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         child: CircleAvatar(
                           radius: 50,
-                          backgroundColor: _user!.isAdmin ? Colors.red.shade50 : Colors.blue.shade50,
+                          backgroundColor: _user is Resident && _user!.isAdmin ? Colors.red.shade50 : Colors.blue.shade50,
                           child: Text(
                             _user!.name.isNotEmpty ? _user!.name[0] : '?',
                             style: TextStyle(
                               fontSize: 40,
-                              color: _user!.isAdmin ? Colors.red.shade900 : Colors.blue.shade900,
+                              color: _user is Resident && _user!.isAdmin ? Colors.red.shade900 : Colors.blue.shade900,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                       ),
-                      if (_user!.isAdmin)
+                      if (_user is Resident && _user!.isAdmin)
                         Positioned(
                           right: 0,
                           bottom: 0,
@@ -261,7 +275,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      _user!.isAdmin ? 'مسؤول النظام' : 'مقيم - المرحلة ${_user!.stage}',
+                      _user is Resident 
+                        ? (_user!.isAdmin ? 'مسؤول النظام' : 'مقيم - المرحلة ${_user!.stage}') 
+                        : 'اختصاصي',
                       style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
                     ),
                   ),
@@ -297,20 +313,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _buildProfileTile(
                           icon: Icons.phone_android_rounded,
                           title: 'رقم الهاتف',
-                          value: _user!.phoneNumber,
+                          value: _user is Resident ? _user!.phoneNumber : _user!.phone,
                           onTap: _editPhoneNumber,
                         ),
-                        Divider(height: 1, indent: 56, color: Colors.grey.shade100),
-                        _buildProfileTile(
-                          icon: Icons.workspace_premium_rounded,
-                          title: 'المرحلة الدراسية',
-                          value: 'Stage ${_user!.stage}',
-                        ),
+                        if (_user is Resident) ...[
+                          Divider(height: 1, indent: 56, color: Colors.grey.shade100),
+                          _buildProfileTile(
+                            icon: Icons.workspace_premium_rounded,
+                            title: 'المرحلة الدراسية',
+                            value: 'Stage ${_user!.stage}',
+                          ),
+                        ],
                       ],
                     ),
                   ),
 
-                  if (_user!.isAdmin) ...[
+                  if (_user is Resident && _user!.isAdmin) ...[
                     const SizedBox(height: 24),
                     const Text(
                       'إدارة النظام',

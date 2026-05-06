@@ -14,7 +14,7 @@ final repositoryProvider = Provider<Repository>((ref) => getIt<Repository>());
 final authServiceProvider = Provider<AuthService>((ref) => getIt<AuthService>());
 
 // Logged In User Provider
-final loggedInUserProvider = FutureProvider<Resident?>((ref) async {
+final loggedInUserProvider = FutureProvider<dynamic>((ref) async {
   final authService = ref.watch(authServiceProvider);
   return await authService.getLoggedInUser();
 });

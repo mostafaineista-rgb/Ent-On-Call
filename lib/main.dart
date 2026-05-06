@@ -9,26 +9,15 @@ import 'services/service_locator.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  debugPrint('--- APP STARTING ---');
-  
-  try {
-    debugPrint('Initializing Service Locator...');
-    await ServiceLocator.setup();
-    debugPrint('Service Locator Initialized.');
 
-    debugPrint('Initializing Notifications...');
+  try {
+    await ServiceLocator.setup();
     await NotificationService.init();
-    debugPrint('Notifications Initialized.');
-    
-    debugPrint('Initializing Date Formatting...');
     await initializeDateFormatting('ar', null);
-    debugPrint('Date Formatting Initialized.');
-  } catch (e, stack) {
-    debugPrint('ERROR DURING INITIALIZATION: $e');
-    debugPrint(stack.toString());
+  } catch (e) {
+    debugPrint('Init error: $e');
   }
-  
-  debugPrint('Running App...');
+
   runApp(
     const ProviderScope(
       child: EntOnCallApp(),

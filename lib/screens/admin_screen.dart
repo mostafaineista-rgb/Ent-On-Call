@@ -139,10 +139,10 @@ class _ResidentManagementTabState extends State<_ResidentManagementTab> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
+      builder: (dialogContext) {
         bool isSaving = false;
         return StatefulBuilder(
-          builder: (context, setDialogState) {
+          builder: (stateContext, setDialogState) {
             return AlertDialog(
               title: Text(resident == null ? 'إضافة مقيم جديد' : 'تعديل بيانات المقيم'),
               content: SingleChildScrollView(
@@ -187,7 +187,7 @@ class _ResidentManagementTabState extends State<_ResidentManagementTab> {
                 ElevatedButton(
                   onPressed: isSaving ? null : () async {
                     if (nameController.text.isEmpty || stageController.text.isEmpty || (resident == null && passwordController.text.isEmpty)) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('يرجى ملء جميع الحقول المطلوبة')));
+                      ScaffoldMessenger.of(stateContext).showSnackBar(const SnackBar(content: Text('يرجى ملء جميع الحقول المطلوبة')));
                       return;
                     }
 
@@ -213,13 +213,13 @@ class _ResidentManagementTabState extends State<_ResidentManagementTab> {
                         await _repository.updateResident(updatedResident);
                       }
                       
-                      if (!mounted) return;
-                      Navigator.pop(context);
+                      if (!dialogContext.mounted) return;
+                      Navigator.pop(dialogContext);
                       _loadData();
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم الحفظ بنجاح')));
+                      ScaffoldMessenger.of(dialogContext).showSnackBar(const SnackBar(content: Text('تم الحفظ بنجاح')));
                     } catch (e) {
                       setDialogState(() => isSaving = false);
-                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+                      if (dialogContext.mounted) ScaffoldMessenger.of(dialogContext).showSnackBar(SnackBar(content: Text('خطأ: $e')));
                     }
                   },
                   child: isSaving 
@@ -238,10 +238,10 @@ class _ResidentManagementTabState extends State<_ResidentManagementTab> {
     final tempPass = (Random().nextInt(9000) + 1000).toString();
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         bool isProcessing = false;
         return StatefulBuilder(
-          builder: (context, setDialogState) {
+          builder: (stateContext, setDialogState) {
             return AlertDialog(
               title: const Text('إعادة تعيين كلمة المرور'),
               content: Text('هل أنت متأكد من إعادة تعيين كلمة مرور المقيم\n${resident.name}؟\n\nستكون كلمة المرور الجديدة:\n$tempPass'),
@@ -253,13 +253,13 @@ class _ResidentManagementTabState extends State<_ResidentManagementTab> {
                     setDialogState(() => isProcessing = true);
                     try {
                       await _repository.resetResidentPassword(resident.id, tempPass);
-                      if (mounted) {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم تغيير كلمة المرور بنجاح')));
+                      if (dialogContext.mounted) {
+                        Navigator.pop(dialogContext);
+                        ScaffoldMessenger.of(dialogContext).showSnackBar(const SnackBar(content: Text('تم تغيير كلمة المرور بنجاح')));
                       }
                     } catch (e) {
                       setDialogState(() => isProcessing = false);
-                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+                      if (dialogContext.mounted) ScaffoldMessenger.of(dialogContext).showSnackBar(SnackBar(content: Text('خطأ: $e')));
                     }
                   },
                   child: isProcessing 
@@ -279,14 +279,12 @@ class _ResidentManagementTabState extends State<_ResidentManagementTab> {
     try {
       await _repository.toggleResidentStatus(resident.id, !resident.isActive);
       await _loadData();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(resident.isActive ? 'تم إيقاف الحساب' : 'تم تفعيل الحساب')));
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(resident.isActive ? 'تم إيقاف الحساب' : 'تم تفعيل الحساب')));
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
-        setState(() => _isLoading = false);
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+      setState(() => _isLoading = false);
     }
   }
 
@@ -451,10 +449,10 @@ class _DutyManagementTabState extends State<_DutyManagementTab> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
+      builder: (dialogContext) {
         bool isSaving = false;
         return StatefulBuilder(
-          builder: (context, setDialogState) {
+          builder: (stateContext, setDialogState) {
             return AlertDialog(
               title: Text(duty == null ? 'إضافة خفارة جديدة' : 'تعديل خفارة'),
               content: SizedBox(
@@ -469,7 +467,7 @@ class _DutyManagementTabState extends State<_DutyManagementTab> {
                         trailing: const Icon(Icons.calendar_today),
                         onTap: duty != null ? null : () async {
                            final picked = await showDatePicker(
-                             context: context, 
+                             context: stateContext, 
                              initialDate: DateTime.tryParse(date) ?? DateTime.now(),
                              firstDate: DateTime(2024), 
                              lastDate: DateTime(2030),
@@ -540,14 +538,14 @@ class _DutyManagementTabState extends State<_DutyManagementTab> {
                         await _repository.updateDuty(newDuty);
                       }
                       
-                      if (mounted) {
-                        Navigator.pop(context);
+                      if (dialogContext.mounted) {
+                        Navigator.pop(dialogContext);
                         _loadData();
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم الحفظ بنجاح')));
+                        ScaffoldMessenger.of(dialogContext).showSnackBar(const SnackBar(content: Text('تم الحفظ بنجاح')));
                       }
                     } catch (e) {
                       setDialogState(() => isSaving = false);
-                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+                      if (dialogContext.mounted) ScaffoldMessenger.of(dialogContext).showSnackBar(SnackBar(content: Text('خطأ: $e')));
                     }
                   },
                   child: isSaving 
@@ -565,10 +563,10 @@ class _DutyManagementTabState extends State<_DutyManagementTab> {
   void _deleteDutyConfirm(Duty duty) {
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         bool isDeleting = false;
         return StatefulBuilder(
-          builder: (context, setDialogState) {
+          builder: (stateContext, setDialogState) {
             return AlertDialog(
               title: const Text('حذف خفارة'),
               content: Text('هل أنت متأكد من حذف خفارة يوم ${DutyDateUtils.formatArabicReadableDate(duty.date)}؟'),
@@ -580,14 +578,14 @@ class _DutyManagementTabState extends State<_DutyManagementTab> {
                     setDialogState(() => isDeleting = true);
                     try {
                       await _repository.deleteDuty(duty.id);
-                      if (mounted) {
-                        Navigator.pop(context);
+                      if (dialogContext.mounted) {
+                        Navigator.pop(dialogContext);
                         _loadData();
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم الحذف بنجاح')));
+                        ScaffoldMessenger.of(dialogContext).showSnackBar(const SnackBar(content: Text('تم الحذف بنجاح')));
                       }
                     } catch (e) {
                       setDialogState(() => isDeleting = false);
-                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+                      if (dialogContext.mounted) ScaffoldMessenger.of(dialogContext).showSnackBar(SnackBar(content: Text('خطأ: $e')));
                     }
                   },
                   child: isDeleting 
@@ -607,10 +605,10 @@ class _DutyManagementTabState extends State<_DutyManagementTab> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
+      builder: (dialogContext) {
         bool isImporting = false;
         return StatefulBuilder(
-          builder: (context, setDialogState) {
+          builder: (stateContext, setDialogState) {
             return AlertDialog(
               title: const Text('استيراد جدول شهري'),
               content: Column(
@@ -649,15 +647,15 @@ class _DutyManagementTabState extends State<_DutyManagementTab> {
                       
                       if (dutiesToImport.isNotEmpty) {
                         await _repository.importSchedule(dutiesToImport);
-                        if (mounted) {
-                          Navigator.pop(context);
+                        if (dialogContext.mounted) {
+                          Navigator.pop(dialogContext);
                           _loadData();
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تم استيراد ${dutiesToImport.length} خفارة بنجاح')));
+                          ScaffoldMessenger.of(dialogContext).showSnackBar(SnackBar(content: Text('تم استيراد ${dutiesToImport.length} خفارة بنجاح')));
                         }
                       }
                     } catch (e) {
                       setDialogState(() => isImporting = false);
-                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ في البيانات: $e')));
+                      if (dialogContext.mounted) ScaffoldMessenger.of(dialogContext).showSnackBar(SnackBar(content: Text('خطأ في البيانات: $e')));
                     }
                   },
                   child: isImporting 
@@ -816,10 +814,10 @@ class _SpecialistManagementTabState extends State<_SpecialistManagementTab> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
+      builder: (dialogContext) {
         bool isSaving = false;
         return StatefulBuilder(
-          builder: (context, setDialogState) {
+          builder: (stateContext, setDialogState) {
             return AlertDialog(
               title: Text(specialist == null ? 'إضافة اختصاصي جديد' : 'تعديل بيانات الاختصاصي'),
               content: SingleChildScrollView(
@@ -844,7 +842,7 @@ class _SpecialistManagementTabState extends State<_SpecialistManagementTab> {
                 ElevatedButton(
                   onPressed: isSaving ? null : () async {
                     if (nameController.text.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('الاسم مطلوب')));
+                      ScaffoldMessenger.of(stateContext).showSnackBar(const SnackBar(content: Text('الاسم مطلوب')));
                       return;
                     }
 
@@ -859,14 +857,14 @@ class _SpecialistManagementTabState extends State<_SpecialistManagementTab> {
                       
                       await _repository.updateSpecialist(updatedSpecialist);
                       
-                      if (mounted) {
-                        Navigator.pop(context);
+                      if (dialogContext.mounted) {
+                        Navigator.pop(dialogContext);
                         _loadData();
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم الحفظ بنجاح')));
+                        ScaffoldMessenger.of(dialogContext).showSnackBar(const SnackBar(content: Text('تم الحفظ بنجاح')));
                       }
                     } catch (e) {
                       setDialogState(() => isSaving = false);
-                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+                      if (dialogContext.mounted) ScaffoldMessenger.of(dialogContext).showSnackBar(SnackBar(content: Text('خطأ: $e')));
                     }
                   },
                   child: isSaving 
@@ -887,10 +885,9 @@ class _SpecialistManagementTabState extends State<_SpecialistManagementTab> {
       await _repository.toggleSpecialistStatus(specialist.id, !specialist.isActive);
       await _loadData();
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
-        setState(() => _isLoading = false);
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+      setState(() => _isLoading = false);
     }
   }
 

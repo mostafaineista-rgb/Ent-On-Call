@@ -18,6 +18,7 @@ import 'package:lottie/lottie.dart';
 import 'specialists_page.dart';
 import 'settings_screen.dart';
 import 'notifications_screen.dart';
+import '../utils/platform_utils.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -27,8 +28,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  bool _isDownloadingUpdate = false;
-  double _downloadProgress = 0.0;
+  bool _isBackgroundDownloading = false;
+  double _backgroundDownloadProgress = 0.0;
   DateTime? _lastSyncTime;
 
   @override
@@ -39,21 +40,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _checkForUpdate() async {
-    if (kIsWeb || Theme.of(context).platform != TargetPlatform.android) return;
+    // Only support auto-updates on Android and Web
+    if (!kIsWeb && Theme.of(context).platform != TargetPlatform.android) return;
 
     try {
-      final response = await http.get(Uri.parse('https://ent-on-call.web.app/version.json'));
+      // Use GitHub as the source of truth for the latest version
+      // This ensures the app detects updates as soon as they are pushed to GitHub
+      final response = await http.get(Uri.parse('https://raw.githubusercontent.com/mostafaineista-rgb/Ent-On-Call/main/web/version.json'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final latestVersion = data['latest_version'];
+        final latestBuild = data['build_number'] ?? 0;
         final downloadUrl = data['download_url'];
         
         final packageInfo = await PackageInfo.fromPlatform();
         final currentVersion = packageInfo.version;
+        final currentBuild = int.tryParse(packageInfo.buildNumber) ?? 0;
 
-        if (_isVersionNewer(latestVersion, currentVersion)) {
+        // Check version string OR build number
+        if (_isVersionNewer(latestVersion, currentVersion) || 
+           (latestVersion == currentVersion && latestBuild > currentBuild)) {
           if (!mounted) return;
-          _showUpdateDialog(latestVersion, downloadUrl);
+          
+          if (kIsWeb) {
+            _showWebUpdateDialog(latestVersion);
+          } else {
+            // Automatically start background download on Android as requested
+            _startBackgroundDownload(latestVersion, downloadUrl);
+          }
         }
       }
     } catch (e) {
@@ -73,102 +87,97 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return false;
   }
 
-  void _showUpdateDialog(String version, String url) {
+  void _showWebUpdateDialog(String version) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('تتوفر نسخة جديدة ($version). يرجى تحديث الصفحة.'),
+        duration: const Duration(days: 1), // Stay until dismissed
+        action: SnackBarAction(
+          label: 'تحديث الآن',
+          onPressed: () => reloadBrowser(),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _startBackgroundDownload(String version, String url) async {
+    if (_isBackgroundDownloading) return;
+
+    setState(() {
+      _isBackgroundDownloading = true;
+      _backgroundDownloadProgress = 0.0;
+    });
+
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final filePath = '${tempDir.path}/app_update_$version.apk';
+      final file = File(filePath);
+
+      final request = http.Request('GET', Uri.parse(url));
+      final response = await http.Client().send(request);
+      
+      final contentLength = response.contentLength ?? 0;
+      int downloaded = 0;
+
+      final sink = file.openWrite();
+      await response.stream.map((chunk) {
+        downloaded += chunk.length;
+        if (contentLength > 0) {
+          setState(() {
+            _backgroundDownloadProgress = downloaded / contentLength;
+          });
+        }
+        return chunk;
+      }).pipe(sink);
+
+      setState(() => _isBackgroundDownloading = false);
+      
+      if (mounted) {
+        _showInstallDialog(version, filePath);
+      }
+    } catch (e) {
+      debugPrint('Background download error: $e');
+      setState(() => _isBackgroundDownloading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('فشل تنزيل التحديث التلقائي.')),
+        );
+      }
+    }
+  }
+
+  void _showInstallDialog(String version, String filePath) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              title: const Text('تحديث جديد متاح', style: TextStyle(fontWeight: FontWeight.bold)),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('يتوفر إصدار رقم $version من تطبيق ENT-ON-CALL.'),
-                  const SizedBox(height: 8),
-                  if (!_isDownloadingUpdate)
-                    const Text('يرجى تحديث التطبيق للحصول على آخر المميزات والتحسينات.')
-                  else
-                    Column(
-                      children: [
-                        const Text('جاري تنزيل التحديث...'),
-                        const SizedBox(height: 12),
-                        LinearProgressIndicator(value: _downloadProgress),
-                        const SizedBox(height: 6),
-                        Text('${(_downloadProgress * 100).toStringAsFixed(1)}%', style: const TextStyle(fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                ],
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('تحديث جاهز للتثبيت', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: Text('تم تنزيل الإصدار $version بنجاح. هل تريد تثبيته الآن؟'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('لاحقاً', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                await OpenFilex.open(filePath);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              actions: [
-                if (!_isDownloadingUpdate)
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('لاحقاً', style: TextStyle(color: Colors.grey)),
-                  ),
-                if (!_isDownloadingUpdate)
-                  ElevatedButton(
-                    onPressed: () async {
-                      setDialogState(() {
-                        _isDownloadingUpdate = true;
-                        _downloadProgress = 0.0;
-                      });
-
-                      try {
-                        final tempDir = await getTemporaryDirectory();
-                        final filePath = '${tempDir.path}/app_update_$version.apk';
-                        final file = File(filePath);
-
-                        final request = http.Request('GET', Uri.parse(url));
-                        final response = await http.Client().send(request);
-                        
-                        final contentLength = response.contentLength ?? 0;
-                        int downloaded = 0;
-
-                        final sink = file.openWrite();
-                        await response.stream.map((chunk) {
-                          downloaded += chunk.length;
-                          if (contentLength > 0) {
-                            setDialogState(() {
-                              _downloadProgress = downloaded / contentLength;
-                            });
-                          }
-                          return chunk;
-                        }).pipe(sink);
-
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                          await OpenFilex.open(filePath);
-                        }
-                      } catch (e) {
-                        debugPrint('Download error: $e');
-                        setDialogState(() {
-                          _isDownloadingUpdate = false;
-                        });
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('حدث خطأ أثناء محاولة تنزيل التحديث.')),
-                          );
-                        }
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: const Text('تحديث الآن'),
-                  ),
-              ],
-            );
-          }
+              child: const Text('تثبيت الآن'),
+            ),
+          ],
         );
       },
     );
   }
+
 
   Future<void> _backgroundRefresh() async {
     try {
@@ -253,7 +262,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final dailyAssignmentsAsync = ref.watch(dailySpecialistsProvider);
     final isSyncing = ref.watch(syncStatusProvider);
     
-    final primaryColor = Theme.of(context).primaryColor;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -280,6 +288,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             onPressed: _backgroundRefresh,
           ),
         ],
+        bottom: _isBackgroundDownloading 
+          ? PreferredSize(
+              preferredSize: const Size.fromHeight(4),
+              child: LinearProgressIndicator(
+                value: _backgroundDownloadProgress,
+                backgroundColor: Colors.white.withValues(alpha: 0.2),
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.orange),
+              ),
+            )
+          : null,
       ),
       body: dutiesAsync.when(
         loading: () => _buildLoadingState(),
@@ -462,7 +480,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return assignmentsAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
       data: (assignments) {
         final todayDate = DutyDateUtils.getCurrentDutyDate();
         final todayAssignment = assignments.where((a) => a.date == todayDate).firstOrNull;

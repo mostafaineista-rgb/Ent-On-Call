@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/repository.dart';
 import '../services/auth_service.dart';
@@ -24,51 +25,48 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   bool _showRetryButton = false;
 
   Future<void> _bootstrapApp() async {
-    debugPrint('--- SPLASH BOOTSTRAP START ---');
     final repository = getIt<Repository>();
     final authService = getIt<AuthService>();
 
     try {
-      // 1. Check if we have cached data (residents)
+      // 1. Check cache first
       final residents = await repository.getResidents();
+      final specialists = await repository.getSpecialists();
       final user = await authService.getLoggedInUser();
 
-      if (residents.isNotEmpty) {
-        debugPrint('Cache found! Navigating immediately...');
+      if (residents.isNotEmpty || specialists.isNotEmpty) {
         _navigateToNext(user != null);
-        
-        // Trigger background sync after navigation (non-blocking)
-        repository.refreshData().then((_) {
-          debugPrint('Background sync after launch complete.');
-        });
+        // Background sync (non-blocking)
+        repository.refreshData();
         return;
       }
 
-      // 2. If NO cache, we must wait for first sync
-      debugPrint('No cache found. Syncing data from server (blocking)...');
+      // 2. No cache — first sync from server
+      // On web, we use a much shorter timeout to avoid the "frozen" feel
+      final timeoutDuration = const Duration(seconds: 60);
+      
       await repository.refreshData().timeout(
-        const Duration(seconds: 10),
+        timeoutDuration,
         onTimeout: () {
-          debugPrint('Initial sync timed out.');
+          debugPrint('Splash: Data refresh timed out');
         },
       );
 
       final freshResidents = await repository.getResidents();
-      if (freshResidents.isEmpty) {
-        debugPrint('Still no data after sync. Showing retry.');
+      final freshSpecialists = await repository.getSpecialists();
+      final freshUser = await authService.getLoggedInUser();
+
+      if (freshResidents.isEmpty && freshSpecialists.isEmpty) {
+        // If we're on web and it's still empty, don't just hang. 
+        // Show the retry button with clear feedback.
         if (mounted) setState(() => _showRetryButton = true);
         return;
       }
 
-      final freshUser = await authService.getLoggedInUser();
       _navigateToNext(freshUser != null);
-
-    } catch (e, stack) {
-      debugPrint('FATAL ERROR during bootstrap: $e');
-      debugPrint(stack.toString());
+    } catch (e) {
+      debugPrint('Bootstrap error: $e');
       if (mounted) setState(() => _showRetryButton = true);
-    } finally {
-      debugPrint('--- SPLASH BOOTSTRAP END ---');
     }
   }
 

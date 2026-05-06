@@ -5,66 +5,66 @@ import '../models/duty.dart';
 import '../models/resident.dart';
 import '../models/specialist.dart';
 import '../models/daily_specialist.dart';
+import 'web_http_client.dart' if (dart.library.io) 'web_http_client_stub.dart';
 
 class ApiService {
-  static const String apiUrl = 'https://script.google.com/macros/s/AKfycbwsnZHzPeNQKPztYYCwL5W6QXPP4MgugQDrn1EOrBq2BXD7uIGXYdzsMdpS-e67ZNW0jw/exec';
+  static const String apiUrl = 'https://script.google.com/macros/s/AKfycbzBcWqCUHr3ETfVTNJIiskoIefy3AONlL4ZS3Y-92UcF9pEqNqqcmynimWDLaXYRH09ww/exec';
   // Secret key for Apps Script access - provided in requirement
   static const String appsScriptSecret = 'ent_secret_2026';
 
   Future<Map<String, dynamic>> fetchData() async {
+    if (kIsWeb) {
+      return _fetchDataWeb();
+    }
+
+    // Native: simple GET with redirect handling
+    final url = '$apiUrl?action=bootstrap';
+    final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 30));
+
+    if (response.statusCode == 302 || response.statusCode == 301) {
+      final newUrl = response.headers['location'];
+      if (newUrl != null) {
+        final redirected = await http.get(Uri.parse(newUrl)).timeout(const Duration(seconds: 30));
+        if (redirected.statusCode == 200) return jsonDecode(redirected.body);
+      }
+    }
+
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception('Server returned status ${response.statusCode}');
+  }
+
+  /// Web-specific fetch using native fetch().
+  /// Simplest approach: use GET which is most compatible with GAS.
+  Future<Map<String, dynamic>> _fetchDataWeb() async {
     try {
-      debugPrint('ApiService: Fetching bootstrap data from $apiUrl');
+      debugPrint('Web fetchData: Fetching data via GET...');
+      final url = '$apiUrl?action=bootstrap';
       
-      if (kIsWeb) {
-        debugPrint('ApiService: Running on web, checking for CORS/Redirect issues...');
-        try {
-          final response = await http.get(Uri.parse('$apiUrl?action=bootstrap'));
-          debugPrint('ApiService Web GET status: ${response.statusCode}');
-          if (response.statusCode == 200) {
-            final body = response.body;
-            debugPrint('ApiService: Received body preview: ${body.length > 100 ? body.substring(0, 100) : body}');
-            return jsonDecode(body);
-          }
-        } catch (e) {
-          debugPrint('ApiService Web GET failed (possibly CORS): $e. Trying POST fallback...');
-          // Fallback to POST which sometimes handles Apps Script CORS better on Web
-          final postResponse = await http.post(
-            Uri.parse(apiUrl),
-            body: {'action': 'bootstrap'},
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-          );
-          debugPrint('ApiService Web POST status: ${postResponse.statusCode}');
-          if (postResponse.statusCode == 200 || postResponse.statusCode == 302) {
-             return jsonDecode(postResponse.body);
-          }
+      try {
+        final body = await webFetchGet(url).timeout(const Duration(seconds: 45));
+        final Map<String, dynamic> data = jsonDecode(body);
+        
+        if (data.containsKey('residents') || data.containsKey('duties') || data.containsKey('specialists')) {
+          debugPrint('Web fetchData: SUCCESS! Valid data received via GET.');
+          return data;
         }
+        debugPrint('Web fetchData: GET response missing keys. Trying POST...');
+      } catch (e) {
+        debugPrint('Web fetchData: GET failed or timed out: $e. Falling back to POST...');
       }
-
-      // Default / Native path
-      final response = await http.get(Uri.parse('$apiUrl?action=bootstrap'));
-      debugPrint('ApiService: Native GET status: ${response.statusCode}');
       
-      // Handle Apps Script manual redirects for Native
-      if (response.statusCode == 302 || response.statusCode == 301) {
-        final newUrl = response.headers['location'];
-        debugPrint('ApiService: Redirecting to $newUrl');
-        if (newUrl != null) {
-          final redirectedResponse = await http.get(Uri.parse(newUrl));
-          if (redirectedResponse.statusCode == 200) {
-            return jsonDecode(redirectedResponse.body);
-          }
-        }
-      }
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Server returned status ${response.statusCode}');
-      }
+      // Fallback to POST
+      final postBody = await webFetchPost(apiUrl, {
+        'action': 'bootstrap', 
+        'secret': appsScriptSecret
+      }).timeout(const Duration(seconds: 45));
+      
+      final Map<String, dynamic> data = jsonDecode(postBody);
+      debugPrint('Web fetchData: SUCCESS! Data received via POST.');
+      return data;
     } catch (e) {
-      debugPrint('ApiService Error: $e');
-      // On some networks, Apps Script might return a 403 or 401 if not shared correctly
-      throw Exception('Network error or access denied. Please check connectivity.');
+      debugPrint('Web fetchData Error (all methods failed): $e');
+      rethrow;
     }
   }
 
@@ -124,81 +124,40 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> postAction(String action, Map<String, dynamic> data) async {
-    debugPrint('--- API POST REQUEST ---');
-    debugPrint('Action: $action');
-    
+    final body = {
+      'action': action,
+      'secret': appsScriptSecret,
+      ...data.map((key, value) => MapEntry(key, value.toString())),
+    };
+
     try {
       if (kIsWeb) {
-        // Use application/x-www-form-urlencoded to avoid CORS preflight (OPTIONS)
-        final Map<String, String> body = {
-          'action': action,
-          'secret': appsScriptSecret,
-          ...data.map((key, value) => MapEntry(key, value.toString())),
-        };
-        
-        final response = await http.post(
-          Uri.parse(apiUrl),
-          body: body,
-        );
-
-        debugPrint('Web POST Status: ${response.statusCode}');
-
-        if (response.statusCode == 302 || response.statusCode == 303) {
-          final newUrl = response.headers['location'];
-          if (newUrl != null) {
-            final redirectedResponse = await http.get(Uri.parse(newUrl));
-            if (redirectedResponse.statusCode == 200) {
-              return jsonDecode(redirectedResponse.body);
-            }
-          }
-          return {'status': 'success', 'message': 'Action sent (redirected)'};
+        final responseBody = await webFetchPost(apiUrl, body).timeout(const Duration(seconds: 30));
+        if (responseBody.trim().startsWith('{')) {
+          return jsonDecode(responseBody);
         }
-
-        if (response.statusCode == 200) {
-          return jsonDecode(response.body);
-        } else {
-          throw Exception('Server error: ${response.statusCode}');
-        }
+        return {'status': 'success', 'data': responseBody};
       }
 
-      // Default / Native path (JSON)
-      final payload = jsonEncode({
-        'action': action,
-        'secret': appsScriptSecret, // Ensure secret is always included
-        ...data,
-      });
-      
+      // Native path
       final response = await http.post(
         Uri.parse(apiUrl),
-        body: payload,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      );
+        body: body,
+      ).timeout(const Duration(seconds: 30));
 
-      debugPrint('Initial Response Status: ${response.statusCode}');
-
-      if (response.statusCode == 302 || response.statusCode == 303) {
+      if (response.statusCode == 302 || response.statusCode == 301) {
         final newUrl = response.headers['location'];
         if (newUrl != null) {
-          final redirectedResponse = await http.get(Uri.parse(newUrl));
-          if (redirectedResponse.statusCode == 200) {
-            return jsonDecode(redirectedResponse.body);
-          }
+          final redirected = await http.get(Uri.parse(newUrl)).timeout(const Duration(seconds: 30));
+          if (redirected.statusCode == 200) return jsonDecode(redirected.body);
         }
-        return {'status': 'success', 'message': 'Action completed (redirect ignored)'};
       }
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Server error: ${response.statusCode}');
-      }
+      if (response.statusCode == 200) return jsonDecode(response.body);
+      throw Exception('Server error: ${response.statusCode}');
     } catch (e) {
       debugPrint('API Post Error: $e');
-      throw Exception('فشل في إرسال البيانات. يرجى التأكد من الإنترنت.');
-    } finally {
-      debugPrint('--- END API POST REQUEST ---');
+      throw Exception('فشل في إرسال البيانات: $e');
     }
   }
 }

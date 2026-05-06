@@ -3,12 +3,14 @@ class Specialist {
   final String name;
   final String phone;
   final bool isActive;
+  final String password;
 
   Specialist({
     required this.id,
     required this.name,
     required this.phone,
     this.isActive = true,
+    this.password = '',
   });
 
   factory Specialist.fromJson(Map<String, dynamic> json) {
@@ -17,6 +19,7 @@ class Specialist {
       name: json['name']?.toString().trim() ?? '',
       phone: json['phone']?.toString().trim() ?? '',
       isActive: json['is_active'] == true || json['isActive'] == true || json['is_active'].toString() == 'true',
+      password: json['password']?.toString() ?? '',
     );
   }
 
@@ -26,6 +29,7 @@ class Specialist {
       'name': name,
       'phone': phone,
       'is_active': isActive,
+      'password': password,
     };
   }
 
@@ -34,12 +38,14 @@ class Specialist {
     String? name,
     String? phone,
     bool? isActive,
+    String? password,
   }) {
     return Specialist(
       id: id ?? this.id,
       name: name ?? this.name,
       phone: phone ?? this.phone,
       isActive: isActive ?? this.isActive,
+      password: password ?? this.password,
     );
   }
 }

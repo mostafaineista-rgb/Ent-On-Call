@@ -12,30 +12,43 @@ class Repository {
   final CacheService _cacheService = getIt<CacheService>();
 
   Future<void> refreshData() async {
+    debugPrint('Repository: Starting data refresh...');
     try {
       final data = await _apiService.fetchData();
       debugPrint('Repository: Received data keys: ${data.keys.toList()}');
       
-      // Use compute to parse in background isolate
-      final parsedData = await compute(_parseBootstrapData, data);
+      // On web, compute() doesn't work (no real isolates) — parse on main thread.
+      // On native, use compute() for background parsing.
+      final _ParsedBootstrapData parsedData;
+      if (kIsWeb) {
+        parsedData = _parseBootstrapData(data);
+      } else {
+        parsedData = await compute(_parseBootstrapData, data);
+      }
 
+      // Parallelize saving to cache
+      final List<Future> saveFutures = [];
+      
       if (parsedData.residents != null) {
-        await _cacheService.saveResidents(parsedData.residents!);
+        saveFutures.add(_cacheService.saveResidents(parsedData.residents!));
       }
       
       if (parsedData.specialists != null) {
-        await _cacheService.saveSpecialists(parsedData.specialists!);
+        saveFutures.add(_cacheService.saveSpecialists(parsedData.specialists!));
       }
       
       if (parsedData.duties != null) {
-        await _cacheService.saveDuties(parsedData.duties!);
+        saveFutures.add(_cacheService.saveDuties(parsedData.duties!));
       }
       
       if (parsedData.dailyAssignments != null) {
-        await _cacheService.saveDailySpecialists(parsedData.dailyAssignments!);
+        saveFutures.add(_cacheService.saveDailySpecialists(parsedData.dailyAssignments!));
       }
+
+      await Future.wait(saveFutures);
     } catch (e) {
       debugPrint('Repository: Refresh failed with error: $e');
+      rethrow;
     }
   }
 
@@ -91,10 +104,7 @@ class Repository {
   // Admin Actions - Specialists
   Future<void> updateSpecialist(Specialist specialist) async {
     await _apiService.postAction('updateSpecialist', {
-      'id': specialist.id,
-      'name': specialist.name,
-      'phone': specialist.phone,
-      'is_active': specialist.isActive,
+      ...specialist.toJson(),
       'secret': ApiService.appsScriptSecret,
     });
     await Future.delayed(const Duration(seconds: 3));
