@@ -44,9 +44,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (!kIsWeb && Theme.of(context).platform != TargetPlatform.android) return;
 
     try {
-      // Use GitHub as the source of truth for the latest version
-      // This ensures the app detects updates as soon as they are pushed to GitHub
-      final response = await http.get(Uri.parse('https://raw.githubusercontent.com/mostafaineista-rgb/Ent-On-Call/main/web/version.json'));
+      // Use a custom client to inject the User-Agent for the update check too
+      final client = http.Client();
+      final response = await client.get(
+        Uri.parse('https://ent-on-call.web.app/version.json'),
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        },
+      );
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final latestVersion = data['latest_version'];
@@ -71,7 +77,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         }
       }
     } catch (e) {
-      debugPrint('Error checking for update: $e');
+      debugPrint('Update check failed: $e');
     }
   }
 
