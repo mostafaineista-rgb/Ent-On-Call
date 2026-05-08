@@ -1,6 +1,6 @@
 {
   "latest_version": "1.2.1",
-  "build_number": 8,
+  "build_number": 9,
   "download_url": "https://github.com/mostafaineista-rgb/Ent-On-Call/releases/download/v1.2.1/app-release.apk",
-  "release_notes": "ENT-ON-CALL 1.2.1+8: Fixed connectivity issues on external devices, added auto-scroll to today in the schedule view, and implemented a clear-cache feature in Settings for better data synchronization."
+  "release_notes": "ENT-ON-CALL 1.2.1+9: Improved background download reliability and added better visual progress indicators."
 }

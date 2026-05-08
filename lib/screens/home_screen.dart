@@ -114,6 +114,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final file = File(filePath);
 
       final request = http.Request('GET', Uri.parse(url));
+      // Inject User-Agent to bypass ISP/Carrier blocks
+      request.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+      
       final response = await http.Client().send(request);
       
       final contentLength = response.contentLength ?? 0;
@@ -290,11 +293,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
         bottom: _isBackgroundDownloading 
           ? PreferredSize(
-              preferredSize: const Size.fromHeight(4),
-              child: LinearProgressIndicator(
-                value: _backgroundDownloadProgress,
-                backgroundColor: Colors.white.withValues(alpha: 0.2),
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.orange),
+              preferredSize: const Size.fromHeight(20),
+              child: Column(
+                children: [
+                  LinearProgressIndicator(
+                    value: _backgroundDownloadProgress,
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.orange),
+                  ),
+                  Container(
+                    width: double.infinity,
+                    color: Colors.orange.shade800,
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: const Text(
+                      'جاري تنزيل التحديث الجديد في الخلفية...',
+                      style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
               ),
             )
           : null,

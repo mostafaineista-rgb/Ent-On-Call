@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 void main() async {
-  const String apiUrl = 'https://script.google.com/macros/s/AKfycbwsnZHzPeNQKPztYYCwL5W6QXPP4MgugQDrn1EOrBq2BXD7uIGXYdzsMdpS-e67ZNW0jw/exec';
+  const String apiUrl = 'https://script.google.com/macros/s/AKfycbyfc15ga-Pu-JWoaVHi0ww52Vt50dTKcFTSMPHQQCyb2KYAij-8HwdF_4V2pdHqv2Dy_A/exec';
   print('Fetching bootstrap data...');
   
   try {
