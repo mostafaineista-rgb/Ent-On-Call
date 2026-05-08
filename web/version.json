@@ -1,6 +1,6 @@
 {
   "latest_version": "1.2.1",
-  "build_number": 10,
+  "build_number": 9,
   "download_url": "https://github.com/mostafaineista-rgb/Ent-On-Call/releases/download/v1.2.1/app-release.apk",
-  "release_notes": "TEST UPDATE: Testing the new resilient downloader and UI feedback in Build 9."
+  "release_notes": "ENT-ON-CALL 1.2.1+9: Final resilient version with improved connectivity and UI feedback."
 }
