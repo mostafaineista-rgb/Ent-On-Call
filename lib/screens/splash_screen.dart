@@ -23,6 +23,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   bool _showRetryButton = false;
+  String? _errorMessage;
 
   Future<void> _bootstrapApp() async {
     final repository = getIt<Repository>();
@@ -66,7 +67,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       _navigateToNext(freshUser != null);
     } catch (e) {
       debugPrint('Bootstrap error: $e');
-      if (mounted) setState(() => _showRetryButton = true);
+      if (mounted) {
+        setState(() {
+          _showRetryButton = true;
+          _errorMessage = e.toString();
+        });
+      }
     }
   }
 
@@ -143,10 +149,34 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 const SizedBox(height: 16),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 40),
-                  child: Text(
-                    'تلميح: تأكد من اتصال الإنترنت وحاول مرة أخرى.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  child: Column(
+                    children: [
+                      Text(
+                        'تلميح: تأكد من اتصال الإنترنت وحاول مرة أخرى.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      ),
+                      if (_errorMessage != null) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.red.shade100),
+                          ),
+                          child: Text(
+                            'Error: $_errorMessage',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.red.shade900,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ],

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/repository.dart';
+import '../services/service_locator.dart';
 import '../utils/date_utils.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -58,6 +59,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 12),
           _buildDataDiagnosticCard(),
+          const SizedBox(height: 12),
+          _buildActionCard(
+            'مسح التخزين المؤقت والمزامنة',
+            'سيتم حذف البيانات المحلية وتحميلها من جديد',
+            Icons.phonelink_erase_rounded,
+            Colors.red,
+            () => _showClearCacheDialog(context),
+          ),
           const SizedBox(height: 20),
           if (isAndroid) ...[
             _buildSectionTitle('التحديثات'),
@@ -238,6 +247,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey.shade400),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showClearCacheDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('تأكيد مسح التخزين'),
+        content: const Text('هل أنت متأكد من مسح كافة البيانات المخزنة وإعادة المزامنة؟ سيؤدي ذلك إلى تسجيل الخروج أيضاً.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('إلغاء'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final repository = getIt<Repository>();
+              await repository.clearCache();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('تم مسح التخزين. يرجى إعادة تشغيل التطبيق.')),
+                );
+              }
+            },
+            child: const Text('مسح الآن', style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }

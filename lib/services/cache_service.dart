@@ -86,4 +86,14 @@ class CacheService {
       return [];
     }
   }
+
+  Future<void> clearAll() async {
+    await _prefs.remove(residentsKey);
+    await _prefs.remove(specialistsKey);
+    await _prefs.remove(dutiesKey);
+    await _prefs.remove(dailySpecialistsKey);
+    // Also clear auth related keys if any
+    await _prefs.remove('ent_oncall_logged_in_user');
+    await _prefs.remove('ent_oncall_user_role');
+  }
 }

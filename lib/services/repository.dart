@@ -11,6 +11,10 @@ class Repository {
   final ApiService _apiService = getIt<ApiService>();
   final CacheService _cacheService = getIt<CacheService>();
 
+  Future<void> clearCache() async {
+    await _cacheService.clearAll();
+  }
+
   Future<void> refreshData() async {
     debugPrint('Repository: Starting data refresh...');
     try {

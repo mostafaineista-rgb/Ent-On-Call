@@ -12,25 +12,68 @@ class ApiService {
   // Secret key for Apps Script access - provided in requirement
   static const String appsScriptSecret = 'ent_secret_2026';
 
+  static const String browserUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
   Future<Map<String, dynamic>> fetchData() async {
     if (kIsWeb) {
       return _fetchDataWeb();
     }
 
-    // Native: simple GET with redirect handling
-    final url = '$apiUrl?action=bootstrap';
-    final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 30));
+    try {
+      // 1. Native GET with browser User-Agent
+      final url = '$apiUrl?action=bootstrap';
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {'User-Agent': browserUserAgent},
+      ).timeout(const Duration(seconds: 30));
 
-    if (response.statusCode == 302 || response.statusCode == 301) {
-      final newUrl = response.headers['location'];
-      if (newUrl != null) {
-        final redirected = await http.get(Uri.parse(newUrl)).timeout(const Duration(seconds: 30));
-        if (redirected.statusCode == 200) return jsonDecode(redirected.body);
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
       }
+
+      if (response.statusCode == 302 || response.statusCode == 301) {
+        final newUrl = response.headers['location'];
+        if (newUrl != null) {
+          final redirected = await http.get(
+            Uri.parse(newUrl),
+            headers: {'User-Agent': browserUserAgent},
+          ).timeout(const Duration(seconds: 30));
+          if (redirected.statusCode == 200) return jsonDecode(redirected.body);
+        }
+      }
+      
+      debugPrint('Native GET failed (status ${response.statusCode}). Trying POST fallback...');
+    } catch (e) {
+      debugPrint('Native GET error: $e. Trying POST fallback...');
     }
 
-    if (response.statusCode == 200) return jsonDecode(response.body);
-    throw Exception('Server returned status ${response.statusCode}');
+    // 2. Native POST Fallback
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'User-Agent': browserUserAgent},
+        body: {'action': 'bootstrap', 'secret': appsScriptSecret},
+      ).timeout(const Duration(seconds: 45));
+
+      if (response.statusCode == 200) return jsonDecode(response.body);
+      
+      // Manual redirect for POST if needed (though GAS usually returns 200 for successful doPost)
+      if (response.statusCode == 302 || response.statusCode == 301) {
+        final newUrl = response.headers['location'];
+        if (newUrl != null) {
+          final redirected = await http.get(
+            Uri.parse(newUrl),
+            headers: {'User-Agent': browserUserAgent},
+          ).timeout(const Duration(seconds: 30));
+          if (redirected.statusCode == 200) return jsonDecode(redirected.body);
+        }
+      }
+      
+      throw Exception('Server returned status ${response.statusCode}');
+    } catch (e) {
+      debugPrint('Native POST fallback also failed: $e');
+      rethrow;
+    }
   }
 
   /// Web-specific fetch using native fetch().
@@ -57,7 +100,7 @@ class ApiService {
       final postBody = await webFetchPost(apiUrl, {
         'action': 'bootstrap', 
         'secret': appsScriptSecret
-      }).timeout(const Duration(seconds: 45));
+      }, userAgent: browserUserAgent).timeout(const Duration(seconds: 45));
       
       final Map<String, dynamic> data = jsonDecode(postBody);
       debugPrint('Web fetchData: SUCCESS! Data received via POST.');
@@ -142,6 +185,7 @@ class ApiService {
       // Native path
       final response = await http.post(
         Uri.parse(apiUrl),
+        headers: {'User-Agent': browserUserAgent},
         body: body,
       ).timeout(const Duration(seconds: 30));
 

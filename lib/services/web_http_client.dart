@@ -11,10 +11,15 @@ Future<String> webFetch({
   required String url,
   required String method,
   Map<String, String>? body,
+  String? userAgent,
 }) async {
   try {
     final web.Headers headers = web.Headers();
     
+    if (userAgent != null) {
+      headers.set('User-Agent', userAgent);
+    }
+
     JSAny? jsBody;
     if (body != null) {
       final encodedBody = body.entries
@@ -62,6 +67,7 @@ Future<String> webFetch({
 }
 
 /// Compatibility wrappers
-Future<String> webFetchGet(String url) => webFetch(url: url, method: 'GET');
-Future<String> webFetchPost(String url, Map<String, String> formData) => 
-    webFetch(url: url, method: 'POST', body: formData);
+Future<String> webFetchGet(String url, {String? userAgent}) => 
+    webFetch(url: url, method: 'GET', userAgent: userAgent);
+Future<String> webFetchPost(String url, Map<String, String> formData, {String? userAgent}) => 
+    webFetch(url: url, method: 'POST', body: formData, userAgent: userAgent);

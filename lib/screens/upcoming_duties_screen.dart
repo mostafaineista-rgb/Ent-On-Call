@@ -4,11 +4,35 @@ import '../services/providers.dart';
 import '../utils/date_utils.dart';
 import '../widgets/duty_card.dart';
 
-class UpcomingDutiesScreen extends ConsumerWidget {
+class UpcomingDutiesScreen extends ConsumerStatefulWidget {
   const UpcomingDutiesScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<UpcomingDutiesScreen> createState() => _UpcomingDutiesScreenState();
+}
+
+class _UpcomingDutiesScreenState extends ConsumerState<UpcomingDutiesScreen> {
+  final GlobalKey _todayKey = GlobalKey();
+  bool _hasScrolled = false;
+
+  void _scrollToToday() {
+    if (_hasScrolled) return;
+    
+    // Use a small delay to ensure the list is rendered
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_todayKey.currentContext != null) {
+        Scrollable.ensureVisible(
+          _todayKey.currentContext!,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOutCubic,
+        );
+        setState(() => _hasScrolled = true);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final dutiesAsync = ref.watch(dutiesProvider);
     final residentsAsync = ref.watch(residentsProvider);
     final specialistsAsync = ref.watch(specialistsProvider);
@@ -24,6 +48,7 @@ class UpcomingDutiesScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Error: $err')),
         data: (duties) {
+          final todayStr = DutyDateUtils.getCurrentDutyDate();
           final now = DutyDateUtils.getCurrentDutyDateTime();
           final startOfMonth = '${now.year}-${now.month.toString().padLeft(2, '0')}-01';
           
@@ -32,6 +57,11 @@ class UpcomingDutiesScreen extends ConsumerWidget {
 
           if (filteredDuties.isEmpty) {
             return _buildEmptyState(ref);
+          }
+
+          // Trigger scroll after build if we found today
+          if (!_hasScrolled) {
+             _scrollToToday();
           }
 
           return ListView.builder(
@@ -44,13 +74,17 @@ class UpcomingDutiesScreen extends ConsumerWidget {
               final assignments = assignmentsAsync.value ?? [];
               final assignment = assignments.where((a) => a.date == duty.date).firstOrNull;
 
+              final isToday = DutyDateUtils.isSameDay(duty.date, todayStr);
+
               return Padding(
+                key: isToday ? _todayKey : null,
                 padding: const EdgeInsets.only(bottom: 12),
                 child: DutyCard(
                   duty: duty,
                   allResidents: residents,
                   allSpecialists: specialists,
                   specialistAssignment: assignment,
+                  isToday: isToday,
                 ),
               );
             },

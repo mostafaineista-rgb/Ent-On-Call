@@ -40,7 +40,23 @@ class DutyDateUtils {
     final month = dutyDate.month.toString().padLeft(2, '0');
     final day = dutyDate.day.toString().padLeft(2, '0');
     
-    return '$year-$month-$day';
+    // Ensure we return Western numerals even if system locale is different
+    return _ensureWesternNumerals('$year-$month-$day');
+  }
+
+  static String _ensureWesternNumerals(String input) {
+    const arabic = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    const western = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    
+    String output = input;
+    for (int i = 0; i < 10; i++) {
+      output = output.replaceAll(arabic[i], western[i]);
+    }
+    return output;
+  }
+
+  static bool isSameDay(String date1, String date2) {
+    return _ensureWesternNumerals(date1) == _ensureWesternNumerals(date2);
   }
 
   /// Parses YYYY-MM-DD to a more readable Arabic format (e.g. Day, dd/MM/yyyy)

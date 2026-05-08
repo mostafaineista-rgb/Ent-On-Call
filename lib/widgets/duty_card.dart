@@ -102,6 +102,13 @@ class DutyCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: isToday 
+          ? BorderSide(color: primaryColor.withValues(alpha: 0.5), width: 2)
+          : BorderSide.none,
+      ),
+      elevation: isToday ? 8 : 2,
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
